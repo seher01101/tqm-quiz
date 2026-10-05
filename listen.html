@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>质量管理 · 简答题听力</title>
+<style>
+:root{--bg:#14181d;--panel:#1c222a;--line:#313a45;--text:#e9edf1;--muted:#8b96a3;--accent:#2dd4bf;--accent-dim:#1a5c54}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6;padding:14px 16px 40px;max-width:520px;margin:0 auto}
+a{color:var(--accent)}h1{font-size:16px;margin:4px 0 2px}.sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+.now{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.now .t{font-size:12px;color:var(--accent)}.now .q{font-size:16px;font-weight:700;margin:4px 0}.now .a{font-size:14px;color:var(--text);white-space:pre-wrap;margin-top:8px;min-height:1.6em}
+.ctl{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:15px;flex:1}
+button.main{background:var(--accent);color:#06201c;border-color:var(--accent);font-weight:700;flex:2}
+.opt{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:12px;align-items:center}
+select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px}
+label{display:flex;gap:6px;align-items:center}
+ol{list-style:none;margin:0;padding:0}li{border-top:1px solid var(--line);padding:10px 4px;cursor:pointer;font-size:14px}li.on{color:var(--accent);font-weight:700}li span{color:var(--muted);margin-right:8px;font-variant-numeric:tabular-nums}
+</style></head><body>
+<h1>简答题听力 · 20题</h1><div class="sub">先听问题，停几秒自己想，再听答案。<a href="index.html">回到刷题</a></div>
+<div class="now"><div class="t" id="st">点“播放”开始</div><div class="q" id="q">—</div><div class="a" id="a"></div></div>
+<div class="ctl"><button id="prev">上一题</button><button class="main" id="play">播放</button><button id="next">下一题</button></div>
+<div class="opt">
+<label>问后停顿<select id="gap"><option value="0">0秒</option><option value="3" selected>3秒</option><option value="6">6秒</option><option value="10">10秒</option></select></label>
+<label>语速<select id="rate"><option>0.8</option><option selected>1</option><option>1.2</option><option>1.5</option></select></label>
+<label><input type="checkbox" id="shuf"> 随机</label>
+<label><input type="checkbox" id="onlyq"> 只听答案</label>
+</div>
+<ol id="list"></ol>
+<audio id="au" preload="auto"></audio>
+<script>
+let items=[],order=[],pos=0,playing=false,phase='q',timer=null;
+const $=id=>document.getElementById(id),au=$('au');
+function buildOrder(){order=items.map((_,i)=>i);if($('shuf').checked)order.sort(()=>Math.random()-.5)}
+function render(){
+ const it=items[order[pos]];$('q').textContent='第'+it.n+'题 '+it.q;
+ document.querySelectorAll('li').forEach(li=>li.classList.toggle('on',+li.dataset.i===order[pos]));
+ if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:'第'+it.n+'题 '+it.q,artist:'质量管理简答'});
+}
+function playPhase(p){
+ clearTimeout(timer);phase=p;const it=items[order[pos]];render();
+ $('a').textContent=p==='a'?it.a:'';$('st').textContent=p==='q'?'问题':'答案';
+ au.src='audio/'+it.n+(p==='q'?'q':'a')+'.mp3';au.playbackRate=+$('rate').value;au.play().catch(()=>{});
+}
+function startItem(){ if($('onlyq').checked)playPhase('a');else playPhase('q'); }
+au.onended=()=>{
+ if(!playing)return;
+ if(phase==='q'){$('st').textContent='想一想…';timer=setTimeout(()=>playPhase('a'),+$('gap').value*1000)}
+ else{timer=setTimeout(()=>{pos=(pos+1)%order.length;startItem()},1200)}
+};
+function setPlaying(v){playing=v;$('play').textContent=v?'暂停':'播放'}
+$('play').onclick=()=>{if(playing){setPlaying(false);au.pause();clearTimeout(timer)}else{setPlaying(true);if(au.src&&au.paused&&au.currentTime>0&&!au.ended)au.play();else startItem()}};
+function go(d){pos=(pos+d+order.length)%order.length;setPlaying(true);startItem()}
+$('next').onclick=()=>go(1);$('prev').onclick=()=>go(-1);
+$('shuf').onchange=()=>{buildOrder();pos=0;render()};
+$('rate').onchange=()=>au.playbackRate=+$('rate').value;
+if('mediaSession' in navigator){navigator.mediaSession.setActionHandler('nexttrack',()=>go(1));navigator.mediaSession.setActionHandler('previoustrack',()=>go(-1))}
+fetch('items.json').then(r=>r.json()).then(d=>{items=d;buildOrder();
+ $('list').innerHTML=items.map((it,i)=>`<li data-i="${i}"><span>${it.n}</span>${it.q}</li>`).join('');
+ $('list').onclick=e=>{const li=e.target.closest('li');if(!li)return;pos=order.indexOf(+li.dataset.i);setPlaying(true);startItem()};render()});
+</script></body></html>

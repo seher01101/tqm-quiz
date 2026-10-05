@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全面质量管理 · 题库练习</title>
+<style>
+  :root{
+    --bg: #14181d;
+    --panel: #1c222a;
+    --panel-2: #232a33;
+    --line: #313a45;
+    --text: #e9edf1;
+    --muted: #8b96a3;
+    --accent: #2dd4bf;
+    --accent-dim: #1a5c54;
+    --warn: #f5a623;
+    --bad: #ef5b5b;
+    --good: #34c77b;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height:1.5;
+    padding: 14px 12px 40px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  h1{font-size:0;margin:0;}
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .brand{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.3px;
+  }
+  .brand small{
+    display:block;
+    font-weight:400;
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:0.5px;
+    margin-top:2px;
+  }
+  .stat-pill{
+    font-size:11px;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px 10px;
+    white-space:nowrap;
+  }
+  .stat-pill b{color:var(--accent);font-weight:700;}
+
+  /* control chart style progress */
+  .gauge{
+    position:relative;
+    height:34px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--panel);
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .gauge-fill{
+    position:absolute; left:0; top:0; bottom:0;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    width:0%;
+    transition:width .35s ease;
+  }
+  .gauge-label{
+    position:relative;
+    z-index:1;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    font-size:11px;
+    color:var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .gauge-mid-line{
+    position:absolute; top:0; bottom:0; left:50%;
+    width:1px; background:rgba(255,255,255,0.08);
+  }
+
+  /* tabs */
+  .tabs{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:2px;
+    margin-bottom:10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab{
+    flex:0 0 auto;
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--muted);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .tab.active{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:rgba(45,212,191,0.08);
+  }
+
+  .row2{display:flex; gap:8px; margin-bottom:12px;}
+  .timer-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+    margin-bottom:12px;
+    font-size:11px;
+    color:var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-row .timer-chip{
+    padding:3px 8px;
+    border-radius:6px;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .timer-row .timer-chip.active{
+    color:var(--accent);
+    border-color:var(--accent);
+    background:rgba(45,212,191,0.08);
+  }
+  select{
+    flex:1;
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 8px;
+    font-size:12.5px;
+  }
+  button.mode-btn{
+    flex:0 0 auto;
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:12.5px;
+  }
+  button.mode-btn.active{
+    border-color:var(--warn);
+    color:var(--warn);
+  }
+
+  /* card */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 15px 15px;
+    margin-bottom:12px;
+  }
+  .card-meta{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .card-meta .chip{
+    background:var(--panel-2);
+    border-radius:4px;
+    padding:2px 7px;
+  }
+  .qtext{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:14px;
+    white-space:pre-wrap;
+  }
+  .blank{
+    color:var(--accent);
+    font-weight:700;
+    border-bottom:1px dashed var(--accent);
+  }
+
+  .fill-input{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:15px;
+    margin-bottom:10px;
+  }
+  .fill-input:focus{outline:none; border-color:var(--accent);}
+
+  .opts{display:flex; flex-direction:column; gap:8px; margin-bottom:4px;}
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:14.5px;
+    cursor:pointer;
+  }
+  .opt .letter{
+    flex:0 0 auto;
+    width:20px; height:20px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px; font-weight:700; color:var(--muted);
+  }
+  .opt.selected{border-color:var(--warn); }
+  .opt.selected .letter{border-color:var(--warn); color:var(--warn);}
+  .opt.correct{border-color:var(--good); background:rgba(52,199,123,0.08);}
+  .opt.correct .letter{border-color:var(--good); color:var(--good); background:rgba(52,199,123,0.15);}
+  .opt.incorrect{border-color:var(--bad); background:rgba(239,91,91,0.08);}
+  .opt.incorrect .letter{border-color:var(--bad); color:var(--bad); background:rgba(239,91,91,0.15);}
+
+  .tf-row{display:flex; gap:10px; margin-bottom:4px;}
+  .tf-btn{
+    flex:1;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text);
+    border-radius:8px;
+    padding:12px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .tf-btn.correct{border-color:var(--good); color:var(--good); background:rgba(52,199,123,0.1);}
+  .tf-btn.incorrect{border-color:var(--bad); color:var(--bad); background:rgba(239,91,91,0.1);}
+
+  .actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:8px;
+    padding:12px;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--accent); color:#0b1414;}
+  .btn-ghost{background:var(--panel-2); color:var(--text); border:1px solid var(--line);}
+  .btn-warn{background:var(--bad); color:#fff;}
+  .btn-good{background:var(--good); color:#08210f;}
+
+  .feedback{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:13.5px;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.good{background:rgba(52,199,123,0.1); color:var(--good); border:1px solid rgba(52,199,123,0.3);}
+  .feedback.bad{background:rgba(239,91,91,0.1); color:var(--bad); border:1px solid rgba(239,91,91,0.3);}
+  .feedback b{color:inherit;}
+
+  .empty{
+    text-align:center;
+    color:var(--muted);
+    padding:40px 10px;
+    font-size:14px;
+  }
+
+  .nav{
+    display:flex;
+    gap:8px;
+    margin-top:4px;
+  }
+
+  footer.hint{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    margin-top:14px;
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align:right;font-size:13px;margin-bottom:6px"><a href="listen.html" style="color:#2dd4bf">🎧 简答题听力</a></div>
+<div class="topbar">
+  <div class="brand">质控题库<small>全面质量管理 · 竞赛练习</small></div>
+  <div class="stat-pill">正确率 <b id="accStat">--</b></div>
+</div>
+
+<div class="gauge">
+  <div class="gauge-fill" id="gaugeFill"></div>
+  <div class="gauge-mid-line"></div>
+  <div class="gauge-label">
+    <span id="gaugeText">0 / 0</span>
+    <span id="gaugeSetName">全部</span>
+  </div>
+</div>
+
+<div class="tabs" id="typeTabs"></div>
+<div class="row2">
+  <select id="chapterSelect"></select>
+  <button class="mode-btn" id="orderBtn">顺序</button>
+  <button class="mode-btn" id="wrongBtn">错题本 (<span id="wrongCount">0</span>)</button>
+</div>
+
+<div class="timer-row" id="timerRow"></div>
+
+<div id="cardHost"></div>
+
+<footer class="hint" id="footHint"></footer>
+
+<script id="quiz-data" type="application/json">[{"id": "fill-1", "section": "fill", "chapter": "质量", "num": 1, "question": "2026年是中国开展全国“质量月”活动的第____届。", "answer": ["49"]}, {"id": "fill-2", "section": "fill", "chapter": "质量", "num": 2, "question": "本次质量月活动主题是____。", "answer": ["深耕质量管理·厚植匠心文化·聚力全链提质"]}, {"id": "fill-3", "section": "fill", "chapter": "质量", "num": 3, "question": "制程 CPK 数值越高，代表该工序____越好。", "answer": ["质量稳定性"]}, {"id": "fill-4", "section": "fill", "chapter": "质量", "num": 4, "question": "产品的自然寿命是指产品在规定的使用条件下完成____的____。", "answer": ["规定功能", "总时间"]}, {"id": "fill-5", "section": "fill", "chapter": "质量", "num": 5, "question": "产品三大质量维度包含内在质量、经济质量与____。", "answer": ["服务质量"]}, {"id": "fill-6", "section": "fill", "chapter": "质量", "num": 6, "question": "生产过程中质量管理的三不原则：____、____、____。", "answer": ["不接受不合格品", "不制造不合格品", "不 传递不合格品"]}, {"id": "fill-7", "section": "fill", "chapter": "质量", "num": 7, "question": "生产线上的内部客户是本工序的____。", "answer": ["下道工序"]}, {"id": "fill-8", "section": "fill", "chapter": "质量", "num": 8, "question": "我国标准分为四级，即____、____、____和____。", "answer": ["国家标准", "行业标准", "地方标准", "企业标准"]}, {"id": "fill-9", "section": "fill", "chapter": "质量管理", "num": 9, "question": "朱兰三部曲三大组成：质量策划、质量控制、____。", "answer": ["质量改进"]}, {"id": "fill-10", "section": "fill", "chapter": "质量管理", "num": 10, "question": "根据解决质量问题的手段和方式的不同， 一般可以将现代质量管理分为质量检验阶段、 ____和____阶段。", "answer": ["统计质量控制阶段", "全面质量管理"]}, {"id": "fill-11", "section": "fill", "chapter": "质量管理", "num": 11, "question": "戴明十四点核心围绕____与产品质量的关系。", "answer": ["企业管理"]}, {"id": "fill-12", "section": "fill", "chapter": "质量管理", "num": 12, "question": "质量特性是指产品、过程或体系与____有关的固有特性。", "answer": ["要求"]}, {"id": "fill-13", "section": "fill", "chapter": "质量管理", "num": 13, "question": "质量检验四大功能：鉴别、把关、预防、____。", "answer": ["报告"]}, {"id": "fill-14", "section": "fill", "chapter": "质量管理", "num": 14, "question": "全面质量管理强调 “三全” 管理，即全员参与、全过程管理和____。", "answer": ["全企业管理"]}, {"id": "fill-15", "section": "fill", "chapter": "全面质量管理基础工作", "num": 15, "question": "员工质量培训分为初级、中级、____三个层级。", "answer": ["高级"]}, {"id": "fill-16", "section": "fill", "chapter": "全面质量管理基础工作", "num": 16, "question": "质量信息是在质量形成全过程中产生的____, 是开展质量管理工作的基 础。", "answer": ["有意义的数据"]}, {"id": "fill-17", "section": "fill", "chapter": "全面质量管理基础工作", "num": 17, "question": "质量数据主要来源：现场检验数据、客户投诉数据、____。", "answer": ["实验室检测数据"]}, {"id": "fill-18", "section": "fill", "chapter": "全面质量管理基础工作", "num": 18, "question": "企业依据有关标准建立测量管理体系，目的是确保____和____ 能够满足预期用途。", "answer": ["测量设备", "测量过程"]}, {"id": "fill-19", "section": "fill", "chapter": "质量文化和品牌", "num": 19, "question": "质量精神文化的核心作用是统一全员对____的价值共识。", "answer": ["质量管理"]}, {"id": "fill-20", "section": "fill", "chapter": "质量文化和品牌", "num": 20, "question": "质量与品牌息息相关。____是____的内核，____是____的外在表现。", "answer": ["质量", "品牌", "品牌", "质量"]}, {"id": "fill-21", "section": "fill", "chapter": "质量文化和品牌", "num": 21, "question": "质量文化建设评价指标包含员工质量意识、标准执行度、____。", "answer": ["质量目标达成率"]}, {"id": "fill-22", "section": "fill", "chapter": "质量管理体系", "num": 22, "question": "内部审核的目的是评价质量管理体系的____和有效性。", "answer": ["符合性"]}, {"id": "fill-23", "section": "fill", "chapter": "质量管理体系", "num": 23, "question": "七项质量管理原则的第 — 条是____。这条原则告诉我们质量管 理的首要关注点是____并争取____。", "answer": ["以顾客为关注焦点", "满足顾客要求", "超越顾客期望"]}, {"id": "fill-24", "section": "fill", "chapter": "质量管理体系", "num": 24, "question": "预防措施是为消除尚未发生不合格的____采取的行动。", "answer": ["潜在原因"]}, {"id": "fill-25", "section": "fill", "chapter": "质量管理体系", "num": 25, "question": "质量目标应形成____，且与质量方针保持一致。", "answer": ["成文信息"]}, {"id": "fill-26", "section": "fill", "chapter": "质量管理体系", "num": 26, "question": "纠正措施是为消除已发现的不合格的____所采取的措施。", "answer": ["原因"]}, {"id": "fill-27", "section": "fill", "chapter": "卓越绩效模式", "num": 27, "question": "卓越绩效九大基础理念包含远见卓识的领导、____。", "answer": ["基于事实的管理"]}, {"id": "fill-28", "section": "fill", "chapter": "卓越绩效模式", "num": 28, "question": "“卓越绩效” 术语是通过综合的____，为顾客、员工和____不断创造价值，提高组织____的绩效和能力，促进组织获得____和 ____。", "answer": ["组织绩效管理方法", "其他相 关方", "整体", "持续发展", "成功"]}, {"id": "fill-29", "section": "fill", "chapter": "卓越绩效模式", "num": 29, "question": "卓越绩效结果板块中，顾客结果包含满意度与____。", "answer": ["顾客忠诚度"]}, {"id": "fill-30", "section": "fill", "chapter": "卓越绩效模式", "num": 30, "question": "《卓越绩效评价准则》标准内容包括____和____两个方面。", "answer": ["过程", "结果"]}, {"id": "fill-31", "section": "fill", "chapter": "方针目标管理", "num": 31, "question": "方针目标三类：定量目标、定性目标、____。", "answer": ["提升类目标"]}, {"id": "fill-32", "section": "fill", "chapter": "方针目标管理", "num": 32, "question": "为掌握方针目标的进展情况，要进行检查，检查分____和____两种。", "answer": ["定期检查", "年末检查"]}, {"id": "fill-33", "section": "fill", "chapter": "方针目标管理", "num": 33, "question": "目标纵向展开用树图，横向展开用____。", "answer": ["矩阵图"]}, {"id": "fill-34", "section": "fill", "chapter": "方针目标管理", "num": 34, "question": "在方针目标管理中，制定目标应遵循____原则，即目标要具体、可衡量、可 实现、相关且有时限。", "answer": ["SMART"]}, {"id": "fill-35", "section": "fill", "chapter": "方针目标管理", "num": 35, "question": "方针目标展开的层次一般为____层。", "answer": ["二至三"]}, {"id": "fill-36", "section": "fill", "chapter": "标杆管理", "num": 36, "question": "标杆管理对比差距后的第三步是制定____。", "answer": ["改善方案"]}, {"id": "fill-37", "section": "fill", "chapter": "标杆管理", "num": 37, "question": "组织实施内部标杆管理的关键是企业应具有____文化，可以做到知识与技能在企 业内部的共享。", "answer": ["共享"]}, {"id": "fill-38", "section": "fill", "chapter": "标杆管理", "num": 38, "question": "竞争性标杆指对标____企业。", "answer": ["直接竞争对手"]}, {"id": "fill-39", "section": "fill", "chapter": "标杆管理", "num": 39, "question": "外部标杆通常可分为____与____。", "answer": ["竞争性标杆", "非竞争性标杆"]}, {"id": "fill-40", "section": "fill", "chapter": "六西格玛管理", "num": 40, "question": "零缺陷完美西格玛水平为____西格玛。", "answer": ["6"]}, {"id": "fill-41", "section": "fill", "chapter": "六西格玛管理", "num": 41, "question": "六西格玛管理是一套系统的、集成的业务____ 方法体系。", "answer": ["改进"]}, {"id": "fill-42", "section": "fill", "chapter": "六西格玛管理", "num": 42, "question": "失效模式分为设计 DFMEA 与生产过程____。", "answer": ["PFMEA"]}, {"id": "fill-43", "section": "fill", "chapter": "精益管理", "num": 43, "question": "七大浪费中最容易被忽视的是____浪费。", "answer": ["人才"]}, {"id": "fill-44", "section": "fill", "chapter": "精益管理", "num": 44, "question": "价值流是指从____转变为____，并赋予____的全部活动。", "answer": ["原材料", "成品", "价值"]}, {"id": "fill-45", "section": "fill", "chapter": "精益管理", "num": 45, "question": "节拍时间依据____需求计算，而非设备产能。", "answer": ["客户"]}, {"id": "fill-46", "section": "fill", "chapter": "现场管理方法", "num": 46, "question": "安灯系统是产线____核心工具。", "answer": ["目视管理"]}, {"id": "fill-47", "section": "fill", "chapter": "现场管理方法", "num": 47, "question": "目视管理的三大基本原则是____、____、____。", "answer": ["视觉化", "透明化", "界限化"]}, {"id": "fill-48", "section": "fill", "chapter": "现场管理方法", "num": 48, "question": "TPM 三大目标：零灾害、零不良、____。", "answer": ["零设备故障"]}, {"id": "fill-49", "section": "fill", "chapter": "现场管理方法", "num": 49, "question": "5S 管理是指整理、____、清扫、____和____的简称。", "answer": ["整顿", "清洁", "素养"]}, {"id": "fill-50", "section": "fill", "chapter": "现场管理方法", "num": 50, "question": "5S 管理的整顿活动应遵循的 “三定” 原则是：____、____和____。", "answer": ["定点", "定容", "定量"]}, {"id": "fill-51", "section": "fill", "chapter": "质量管理小组活动", "num": 51, "question": "QC 课题分为问题解决型与____两类。", "answer": ["创新型"]}, {"id": "fill-52", "section": "fill", "chapter": "质量管理小组活动", "num": 52, "question": "质量管理小组活动总结可从专业技术、管理技术以及____这三个方 面展开。", "answer": ["小组成员综合素质"]}, {"id": "fill-53", "section": "fill", "chapter": "质量工具概述", "num": 53, "question": "因果图又称____图。", "answer": ["鱼骨"]}, {"id": "fill-54", "section": "fill", "chapter": "质量工具概述", "num": 54, "question": "在 FMEA 中，及时性是成功实施的最重要因素之一，它是一个 “____” 的行 为，而不是 “事后的行为”。", "answer": ["事前"]}, {"id": "fill-55", "section": "fill", "chapter": "质量工具概述", "num": 55, "question": "排列图遵循二八法则，____% 问题来自 20% 主要原因。", "answer": ["80"]}, {"id": "fill-56", "section": "fill", "chapter": "质量工具概述", "num": 56, "question": "____是指为解决质量方面存在的问题和不断改进而采用的方法和技术，通常 是把某些成功的管理实践进行整理和程序化处理，使之成为普遍适用的方法。", "answer": ["质量工具"]}, {"id": "fill-57", "section": "fill", "chapter": "统计技术基础", "num": 57, "question": "三大集中趋势统计量：均值、中位数、____。", "answer": ["众数"]}, {"id": "fill-58", "section": "fill", "chapter": "统计技术基础", "num": 58, "question": "通过计数个数的方法取得，不能连续取得的数据称为____。", "answer": ["计数数据"]}, {"id": "fill-59", "section": "fill", "chapter": "统计技术基础", "num": 59, "question": "统计推断两类：参数估计、____。", "answer": ["假设检验"]}, {"id": "fill-60", "section": "fill", "chapter": "过程分析与数据收集", "num": 60, "question": "焦点小组适合挖掘客户____。", "answer": ["潜在需求"]}, {"id": "fill-61", "section": "fill", "chapter": "过程分析与数据收集", "num": 61, "question": "对生产线上产品的尺寸进行实时测量，以此收集数据的方法是____。", "answer": ["直接测量法"]}, {"id": "fill-62", "section": "fill", "chapter": "过程分析与数据收集", "num": 62, "question": "检查表用于现场实时记录____数据。", "answer": ["不良"]}, {"id": "fill-63", "section": "fill", "chapter": "数据整理与分析", "num": 63, "question": "散布图用于观察两组____变量的相关关系。", "answer": ["数值"]}, {"id": "fill-64", "section": "fill", "chapter": "数据整理与分析", "num": 64, "question": "描述数据离散程度的常用统计量中，能够反映数据与均值之间平均距离的是 ____.", "answer": ["标准差"]}, {"id": "fill-65", "section": "fill", "chapter": "数据整理与分析", "num": 65, "question": "极差是数据最大值减去____。", "answer": ["最小值"]}, {"id": "fill-66", "section": "fill", "chapter": "数据整理与分析", "num": 66, "question": "对分类数据进行分析时，常用 ____ 来展示各类别数据的占比情况，直观反映数据 的构成。", "answer": ["饼图"]}, {"id": "fill-67", "section": "fill", "chapter": "原因分析与解决方案", "num": 67, "question": "人、机、料、法、____五大分析要素。", "answer": ["环"]}, {"id": "fill-68", "section": "fill", "chapter": "原因分析与解决方案", "num": 68, "question": "解决问题的基本流程中，在明确问题之后，需要进行 ____，以全面掌握问题 的现状、范围和严重程度。", "answer": ["现状调查"]}, {"id": "fill-69", "section": "fill", "chapter": "统计过程控制", "num": 69, "question": "控制图三条控制线：上控制限、中心线、____。", "answer": ["下控制限"]}, {"id": "fill-70", "section": "fill", "chapter": "统计过程控制", "num": 70, "question": "统计过程控制中，将过程分为 ____ 和受控状态，受控状态下过程的变异仅由 偶然因素引起。", "answer": ["失控状态"]}, {"id": "judge-1", "section": "judge", "chapter": "质量", "num": 1, "question": "质量是指产品或服务满足顾客需求的程度的感受。", "answer": "错误"}, {"id": "judge-2", "section": "judge", "chapter": "质量", "num": 2, "question": "顾客的期望型质量特性会随行业发展持续提升。", "answer": "正确"}, {"id": "judge-3", "section": "judge", "chapter": "质量", "num": 3, "question": "顾客和其他相关方的需求是会不断变化的，因此产品的固有特性也应不断满足变化的 要求，才能具有高质量。", "answer": "正确"}, {"id": "judge-4", "section": "judge", "chapter": "质量", "num": 4, "question": "企业标准要求必须严于现行国家标准。", "answer": "正确"}, {"id": "judge-5", "section": "judge", "chapter": "质量", "num": 5, "question": "全面质量管理强调 “始于识别顾客的需要，终于满足顾客的需要”，顾客就是指外部的 最终的顾客。", "answer": "错误"}, {"id": "judge-6", "section": "judge", "chapter": "质量管理", "num": 6, "question": "PDCA 仅适用于大型改善项目，不适合日常工作。", "answer": "错误"}, {"id": "judge-7", "section": "judge", "chapter": "质量管理", "num": 7, "question": "（ × ） 在朱兰质量三部曲中，将实际绩效与质量目标进行对比，并对差异采取措施， 这属于质量改进阶段的内容。", "answer": "错误"}, {"id": "judge-8", "section": "judge", "chapter": "质量管理", "num": 8, "question": "质量不是检验出来的，而是生产制造出来的。", "answer": "正确"}, {"id": "judge-9", "section": "judge", "chapter": "质量管理", "num": 9, "question": "质量方针应定期评审，但不必修订。", "answer": "错误"}, {"id": "judge-10", "section": "judge", "chapter": "质量管理", "num": 10, "question": "质量体系文件一经制定，就不能更改。", "answer": "错误"}, {"id": "judge-11", "section": "judge", "chapter": "全面质量管理基础工作", "num": 11, "question": "ISO9001 认证有效期 3 年，期间无需监督审核。", "answer": "错误"}, {"id": "judge-12", "section": "judge", "chapter": "全面质量管理基础工作", "num": 12, "question": "计量的准确性是指在统一计量单位的基础上，无论何时采用何种方法，使用何种计量 器具，以及由何人测量， 只要符合有关的要求，测量结果应在给定的区间内一致。", "answer": "错误"}, {"id": "judge-13", "section": "judge", "chapter": "全面质量管理基础工作", "num": 13, "question": "质量意识培训仅面向一线生产员工。", "answer": "错误"}, {"id": "judge-14", "section": "judge", "chapter": "全面质量管理基础工作", "num": 14, "question": "在产品的生产过程中各环节和工序都进行质量检验，所以，产品质量是检验出来的。", "answer": "错误"}, {"id": "judge-15", "section": "judge", "chapter": "全面质量管理基础工作", "num": 15, "question": "企业应公开其执行的强制性标准、推荐性标准、团体标准或企业标准的编号和名称。", "answer": "正确"}, {"id": "judge-16", "section": "judge", "chapter": "质量文化和品牌", "num": 16, "question": "质量精神文化无需形成正式企业文件。", "answer": "错误"}, {"id": "judge-17", "section": "judge", "chapter": "质量文化和品牌", "num": 17, "question": "质量文化主要由四个层次构成， 其中行为文化层就是指通过各种规章制度来约束员工 行为和组织行为。", "answer": "错误"}, {"id": "judge-18", "section": "judge", "chapter": "质量文化和品牌", "num": 18, "question": "强势品牌必然具备稳定的产品质量水平。", "answer": "正确"}, {"id": "judge-19", "section": "judge", "chapter": "质量文化和品牌", "num": 19, "question": "质量文化建设和品牌管理，都是全面质量管理的工作内容。", "answer": "正确"}, {"id": "judge-20", "section": "judge", "chapter": "质量管理体系", "num": 20, "question": "质量记录属于三级体系文件。", "answer": "错误"}, {"id": "judge-21", "section": "judge", "chapter": "质量管理体系", "num": 21, "question": "改进是对质量管理的较高要求， 组织每年组织一次评价改进活动就可以满足质量管理 体系的要求。", "answer": "错误"}, {"id": "judge-22", "section": "judge", "chapter": "质量管理体系", "num": 22, "question": "纠正措施仅针对实物产品不良。", "answer": "错误"}, {"id": "judge-23", "section": "judge", "chapter": "质量管理体系", "num": 23, "question": "质量管理体系中的 “顾客满意” 可以通过顾客反馈来测量。", "answer": "正确"}, {"id": "judge-24", "section": "judge", "chapter": "卓越绩效模式", "num": 24, "question": "卓越绩效仅用于全国质量奖评审。", "answer": "错误"}, {"id": "judge-25", "section": "judge", "chapter": "卓越绩效模式", "num": 25, "question": "《卓越绩效评价准则》标准中 “领导作用” 理念体现在领导者确立组织统一的宗旨 及方向，创造并保持使员 工能充分参与实现组织目标的内部环境。", "answer": "正确"}, {"id": "judge-26", "section": "judge", "chapter": "卓越绩效模式", "num": 26, "question": "绩效结果指标仅包含量化数字指标。", "answer": "错误"}, {"id": "judge-27", "section": "judge", "chapter": "卓越绩效模式", "num": 27, "question": "组织只要关注产品质量结果就行，不用关注服务结果。", "answer": "错误"}, {"id": "judge-28", "section": "judge", "chapter": "卓越绩效模式", "num": 28, "question": "卓越绩效模式强调持续改进。", "answer": "正确"}, {"id": "judge-29", "section": "judge", "chapter": "方针目标管理", "num": 29, "question": "定性质量目标无需分解至各部门。", "answer": "错误"}, {"id": "judge-30", "section": "judge", "chapter": "方针目标管理", "num": 30, "question": "方针目标管理是组织进行战略部署、实现战略目标的有效方法。", "answer": "正确"}, {"id": "judge-31", "section": "judge", "chapter": "方针目标管理", "num": 31, "question": "目标检查仅查看最终完成数值。", "answer": "错误"}, {"id": "judge-32", "section": "judge", "chapter": "方针目标管理", "num": 32, "question": "实施方针目标管理能提高企业的凝聚力。", "answer": "正确"}, {"id": "judge-33", "section": "judge", "chapter": "方针目标管理", "num": 33, "question": "方针目标管理的评价只看目标是否达成。", "answer": "错误"}, {"id": "judge-34", "section": "judge", "chapter": "标杆管理", "num": 34, "question": "内部标杆无需对比量化数据。", "answer": "错误"}, {"id": "judge-35", "section": "judge", "chapter": "标杆管理", "num": 35, "question": "企业选择对标对象必须选择行业最佳实践或者代表最高水平的组织。", "answer": "错误"}, {"id": "judge-36", "section": "judge", "chapter": "标杆管理", "num": 36, "question": "标杆差距分析结果是制定改善计划的依据。", "answer": "正确"}, {"id": "judge-37", "section": "judge", "chapter": "标杆管理", "num": 37, "question": "标杆对比结果不重要，过程才重要。", "answer": "错误"}, {"id": "judge-38", "section": "judge", "chapter": "六西格玛管理", "num": 38, "question": "六西格玛仅适用于制造业产线。", "answer": "错误"}, {"id": "judge-39", "section": "judge", "chapter": "六西格玛管理", "num": 39, "question": "六西格玛管理追求的是一种理念，并不要求为企业带来财务回报。", "answer": "错误"}, {"id": "judge-40", "section": "judge", "chapter": "六西格玛管理", "num": 40, "question": "帕累托原理帮助团队聚焦少数主要不良原因。", "answer": "正确"}, {"id": "judge-41", "section": "judge", "chapter": "六西格玛管理", "num": 41, "question": "质量功能展开（QFD）主要用于将顾客需求转化为产品特性。", "answer": "正确"}, {"id": "judge-42", "section": "judge", "chapter": "精益管理", "num": 42, "question": "未设定节拍也可以直接使用看板。", "answer": "错误"}, {"id": "judge-43", "section": "judge", "chapter": "精益管理", "num": 43, "question": "多能工是指那些能操作多种设备的生产作业人员。", "answer": "正确"}, {"id": "judge-44", "section": "judge", "chapter": "精益管理", "num": 44, "question": "大量库存可以杜绝所有停线风险。", "answer": "错误"}, {"id": "judge-45", "section": "judge", "chapter": "精益管理", "num": 45, "question": "防错法可以完全杜绝错误的发生。", "answer": "错误"}, {"id": "judge-46", "section": "judge", "chapter": "现场管理方法", "num": 46, "question": "整理仅丢弃现场损坏物品。", "answer": "错误"}, {"id": "judge-47", "section": "judge", "chapter": "现场管理方法", "num": 47, "question": "防错法只有人人树立预防差错的意识，并共同参与缺陷预防才是关键。", "answer": "正确"}, {"id": "judge-48", "section": "judge", "chapter": "现场管理方法", "num": 48, "question": "红色安灯代表生产正常状态。", "answer": "错误"}, {"id": "judge-49", "section": "judge", "chapter": "现场管理方法", "num": 49, "question": "TPM 管理是企业管理过程中的一项最基本的管理工具。", "answer": "正确"}, {"id": "judge-50", "section": "judge", "chapter": "现场管理方法", "num": 50, "question": "清扫就是突击打扫卫生，使工作场所符合卫生要求。", "answer": "错误"}, {"id": "judge-51", "section": "judge", "chapter": "现场管理方法", "num": 51, "question": "对物品进行规划布局，确定存储摆放的场所的活动属于整理的范畴。", "answer": "错误"}, {"id": "judge-52", "section": "judge", "chapter": "质量管理小组活动", "num": 52, "question": "QC 小组成员只能来自质量部门。", "answer": "错误"}, {"id": "judge-53", "section": "judge", "chapter": "质量管理小组活动", "num": 53, "question": "质量管理小组活动的每一个步骤都应当基于数据、信息等客观事实来开展调查、分析、 评价与决策。", "answer": "正确"}, {"id": "judge-54", "section": "judge", "chapter": "统计技术基础", "num": 54, "question": "连续型数据只能取整数，无小数。", "answer": "错误"}, {"id": "judge-55", "section": "judge", "chapter": "统计技术基础", "num": 55, "question": "样本标准差的数值越小，说明总体数据的波动越小，散布情况越集中。", "answer": "错误"}, {"id": "judge-56", "section": "judge", "chapter": "统计技术基础", "num": 56, "question": "简单随机抽样需要完整抽样框。", "answer": "正确"}, {"id": "judge-57", "section": "judge", "chapter": "统计技术基础", "num": 57, "question": "参数估计是针对关于总体的假设，利用样本数据对总体作出推断。", "answer": "错误"}, {"id": "judge-58", "section": "judge", "chapter": "统计技术基础", "num": 58, "question": "关系数 r=0.8 表示两个变量之间存在极强的正线性相关关系。", "answer": "错误"}, {"id": "judge-59", "section": "judge", "chapter": "过程分析与数据收集", "num": 59, "question": "问卷调查适合挖掘深度问题细节。", "answer": "错误"}, {"id": "judge-60", "section": "judge", "chapter": "过程分析与数据收集", "num": 60, "question": "流程展开图不仅能展示流程步骤，还能体现各步骤间的时间顺序关系。", "answer": "错误"}, {"id": "judge-61", "section": "judge", "chapter": "过程分析与数据收集", "num": 61, "question": "过程思维是指关注产品形成的过程，而不是仅在过程的终端实施控制。", "answer": "正确"}, {"id": "judge-62", "section": "judge", "chapter": "数据整理与分析", "num": 62, "question": "众数是排序后中间数值。", "answer": "错误"}, {"id": "judge-63", "section": "judge", "chapter": "数据整理与分析", "num": 63, "question": "直方图的分组数应根据收集的样本量来确定。", "answer": "正确"}, {"id": "judge-64", "section": "judge", "chapter": "数据整理与分析", "num": 64, "question": "条形图适合对比各类别数据大小。", "answer": "正确"}, {"id": "judge-65", "section": "judge", "chapter": "原因分析与解决方案", "num": 65, "question": "头脑风暴需要主持人把控讨论。", "answer": "正确"}, {"id": "judge-66", "section": "judge", "chapter": "原因分析与解决方案", "num": 66, "question": "为保证意见的有效性，参加头脑风暴的人员应对彼此的意见提出评论意见。", "answer": "错误"}, {"id": "judge-67", "section": "judge", "chapter": "原因分析与解决方案", "num": 67, "question": "头脑风暴的过程强调自由畅想，领导与一线员工有同等的发表想法的机会。", "answer": "正确"}, {"id": "judge-68", "section": "judge", "chapter": "统计过程控制", "num": 68, "question": "特殊原因波动可通过改善消除。", "answer": "正确"}, {"id": "judge-69", "section": "judge", "chapter": "统计过程控制", "num": 69, "question": "控制图的控制限是根据产品的规格限确定的，二者数值相同。", "answer": "错误"}, {"id": "judge-70", "section": "judge", "chapter": "统计过程控制", "num": 70, "question": "质量波动是完全可以避免的，只要控制住影响过程（工序）质量的 6 个因素。", "answer": "错误"}, {"id": "multi-1", "section": "multi", "chapter": "质量", "num": 1, "question": "今年质量月共有几个活动____？", "options": {"A": "“质量主题观影” 活动", "B": "“全面质量管理知识” 竞赛", "C": "“质量文化建设”活动", "D": "“上下游工序走访交流” 活动", "E": "“质量主题培训活动”", "F": "“2026 年不锈钢质量攻关改善活动”", "G": "“行业对标交流活动”"}, "answer": "ABCDEFG"}, {"id": "multi-2", "section": "multi", "chapter": "质量", "num": 2, "question": "属于产品基本型质量特性的有____", "options": {"A": "产品使用安全性", "B": "核心功能符合规格", "C": "超出预期的增值附加功能", "D": "符合国家法规标准"}, "answer": "ABD"}, {"id": "multi-3", "section": "multi", "chapter": "质量", "num": 3, "question": "推行 ISO9001 质量管理体系认证的好处有____", "options": {"A": "提升生产流程稳定性", "B": "增强客户信任度", "C": "标准化企业作业流程", "D": "便于和大型供方合作", "E": "完全取消检验成本"}, "answer": "ABCD"}, {"id": "multi-4", "section": "multi", "chapter": "质量管理", "num": 4, "question": "质量管控部门工作职责包含____", "options": {"A": "来料入库检验", "B": "制定企业销售战略", "C": "月度不良数据分", "D": "编制产品检验标准", "E": "安排货物发货排期"}, "answer": "ACD"}, {"id": "multi-5", "section": "multi", "chapter": "质量管理", "num": 5, "question": "质量方针应满足的要求有____", "options": {"A": "与组织的宗旨相适应", "B": "包括对满足要求和持续改进质量管理体系有效性的承诺", "C": "供制定和评审质量目标的框架", "D": "在组织内得到沟通和理解"}, "answer": "ABCD"}, {"id": "multi-6", "section": "multi", "chapter": "质量管理", "num": 6, "question": "质量控制的目的是____", "options": {"A": "无限制提升产量", "B": "预防不良品产生", "C": "稳定产品质量水平", "D": "消除全部生产成本", "E": "减少客户质量投诉"}, "answer": "BCE"}, {"id": "multi-7", "section": "multi", "chapter": "全面质量管理基础工作", "num": 7, "question": "员工质量培训的核心目的是____", "options": {"A": "延长员工工作时长", "B": "提升全员质量意识", "C": "掌握质量问题分析工具", "D": "能够现场自主开展改善", "E": "理解产品标准要求"}, "answer": "BCDE"}, {"id": "multi-8", "section": "multi", "chapter": "全面质量管理基础工作", "num": 8, "question": "体系审核需核查的文件资料有____", "options": {"A": "企业质量手册", "B": "日常检验记录", "C": "纠正措施报告", "D": "作业操作指导书", "E": "员工工资台账"}, "answer": "ABCD"}, {"id": "multi-9", "section": "multi", "chapter": "质量文化和品牌", "num": 9, "question": "质量文化是组织重要的软实力，具有____等功能", "options": {"A": "宏观功能", "B": "导向功能", "C": "约束功能", "D": "激励功能", "E": "辐射功能"}, "answer": "BCDE"}, {"id": "multi-10", "section": "multi", "chapter": "质量文化和品牌", "num": 10, "question": "企业质量精神文化实例包含____", "options": {"A": "以客户满意为核心的愿景", "B": "操作失误处罚制度", "C": "全员 “质量第一”价值观", "D": "持续改进理念", "E": "质检区域现场布局"}, "answer": "ACD"}, {"id": "multi-11", "section": "multi", "chapter": "质量文化和品牌", "num": 11, "question": "构成质量物质文化层的活动/载体有____", "options": {"A": "质量责任管理制度", "B": "质量业绩展示看板", "C": "精密检测设备仪器", "D": "书面质量方针", "E": "质量文化宣传横幅"}, "answer": "BCE"}, {"id": "multi-12", "section": "multi", "chapter": "质量管理体系", "num": 12, "question": "GB/T19001 标准规定，组织应在相关____建立质量目标", "options": {"A": "职能", "B": "层次", "C": "范围", "D": "部门", "E": "质量管理体系所需过程"}, "answer": "ABE"}, {"id": "multi-13", "section": "multi", "chapter": "质量管理体系", "num": 13, "question": "证明质量管理体系运行有效的记录证据有____", "options": {"A": "未审批生产计划草稿", "B": "内部质量审核报告", "C": "预防措施记录", "D": "产品实验室检测报告", "E": "员工质量培训档案"}, "answer": "BCDE"}, {"id": "multi-14", "section": "multi", "chapter": "质量管理体系", "num": 14, "question": "出现以下情况需要开展纠正措施____", "options": {"A": "产品出现不符合规格不良", "B": "内审发现体系不符合项", "C": "产品检验全部合格", "D": "客户重复出现同类质量投诉", "E": "生产流程无任何波动"}, "answer": "ABD"}, {"id": "multi-15", "section": "multi", "chapter": "卓越绩效模式", "num": 15, "question": "《卓越绩效评价准则》 （GB/T19580) 标准倡导组织为相关方创造价值，这里的 “相 关方” 包括____", "options": {"A": "顾客", "B": "竞争对手", "C": "员工", "D": "供方和合作伙伴", "E": "股东、社会"}, "answer": "ACDE"}, {"id": "multi-16", "section": "multi", "chapter": "卓越绩效模式", "num": 16, "question": "卓越绩效中产品与服务结果指标包含____", "options": {"A": "客户满意度", "B": "客户投诉及时闭环率", "C": "出厂不良品率", "D": "售后服务评价得分", "E": "企业新增设备采购数量"}, "answer": "ABCD"}, {"id": "multi-17", "section": "multi", "chapter": "卓越绩效模式", "num": 17, "question": "企业制定战略需考量的内部因素有____", "options": {"A": "新出台政府法规", "B": "内部技术研发能力", "C": "员工技能水平", "D": "工厂生产产能", "E": "外部市场需求变化"}, "answer": "BCD"}, {"id": "multi-18", "section": "multi", "chapter": "方针目标管理", "num": 18, "question": "方针目标管理的特点包括____", "options": {"A": "强调系统管理", "B": "强调重点管理", "C": "注重措施管理", "D": "突出计划管理", "E": "注重自我管理"}, "answer": "ABCE"}, {"id": "multi-19", "section": "multi", "chapter": "方针目标管理", "num": 19, "question": "方针目标管理是企业经营管理的有效工具，它的作用通常包括____", "options": {"A": "帮助组织进行战略部署，实现战略目标", "B": "调动企业各级员工的积极性", "C": "提高企业管理水平", "D": "增强产品竞争力", "E": "强化流程标准化程度"}, "answer": "ABC"}, {"id": "multi-20", "section": "multi", "chapter": "方针目标管理", "num": 20, "question": "在制定方针目标管理中的重点课题时，通常可从以下哪些方面进行考虑____", "options": {"A": "组织战略规划以及中长期发展规划", "B": "各部门的日常工作目标和工作计划", "C": "上一年度方针目标实施过程中出现的问题", "D": "一线员工的需求与期望", "E": "外部竞争环境的变化（如市场、客户、竞争对手等）"}, "answer": "ACE"}, {"id": "multi-21", "section": "multi", "chapter": "方针目标管理", "num": 21, "question": "方针目标策划， 一般包括确定重点课题、____等内容", "options": {"A": "设定目标", "B": "制订方案", "C": "方针目标展开", "D": "方针目标检查", "E": "实施计划制订"}, "answer": "ABCE"}, {"id": "multi-22", "section": "multi", "chapter": "标杆管理", "num": 22, "question": "在组建项目团队时，应根据项目类型考虑由以下人员组成____", "options": {"A": "高层领导", "B": "领队", "C": "秘书", "D": "专家", "E": "其他相关人员"}, "answer": "BDE"}, {"id": "multi-23", "section": "multi", "chapter": "标杆管理", "num": 23, "question": "内部标杆管理的主要步骤包括____", "options": {"A": "制定组织战略", "B": "制定企业内部绩效标杆的标准", "C": "识别企业内部最佳技能技艺等实践", "D": "有组织地在内部推广", "E": "总结与评估"}, "answer": "BCDE"}, {"id": "multi-24", "section": "multi", "chapter": "标杆管理", "num": 24, "question": "通常的标杆数据收集渠道和方法有____", "options": {"A": "行业或专业协会", "B": "标杆组织的年报", "C": "公开报道和出版物", "D": "相关方问卷调查", "E": "外部专家"}, "answer": "ABCDE"}, {"id": "multi-25", "section": "multi", "chapter": "六西格玛管理", "num": 25, "question": "六西格玛方法论包括____", "options": {"A": "过程改进方法 DMAIC", "B": "按3 .4ppm 质量水平控制过程", "C": "用统计方法进行抽样检验", "D": "过程设计方法 DMADV 或 IDDOV", "E": "综合产品开发方法 IPD"}, "answer": "AD"}, {"id": "multi-26", "section": "multi", "chapter": "六西格玛管理", "num": 26, "question": "六西格玛黑带的职责通常包括____", "options": {"A": "制订组织的六西格玛管理推进计划", "B": "负责六西格玛管理在组织中的部署", "C": "资源配置并建立激励机制", "D": "带领团队开展六西格玛项目", "E": "为绿带提供培训和指导"}, "answer": "DE"}, {"id": "multi-27", "section": "multi", "chapter": "六西格玛管理", "num": 27, "question": "推行六西格玛管理的主要目的是 ____", "options": {"A": "使产品或服务达到3.4ppm 质量水平", "B": "追求零缺陷，持续改进", "C": "形成关注过程数据说话的组织文化", "D": "普及统计质量控制知识", "E": "成为获取竞争优势的组织战略"}, "answer": "BCE"}, {"id": "multi-28", "section": "multi", "chapter": "六西格玛管理", "num": 28, "question": "以下哪些是六西格玛管理的核心理念____", "options": {"A": "顾客驱动和顾客满意", "B": "基于数据和事实管理", "C": "无边界合作与突破性改进", "D": "注重财务收益", "E": "长短期目标平衡"}, "answer": "ABC"}, {"id": "multi-29", "section": "multi", "chapter": "六西格玛管理", "num": 29, "question": "以下哪些是 DMAIC 方法中\"控制(C)\"阶段的常用工具____", "options": {"A": "方差分析 ANOVA", "B": "防错", "C": "标准化作业 SOP", "D": "因果矩阵", "E": "SPC 控制图"}, "answer": "BCE"}, {"id": "multi-30", "section": "multi", "chapter": "精益管理", "num": 30, "question": "按照精益思想，缩短交付周期可采取的改善措施包括____", "options": {"A": "减少设备故障停机时间", "B": "加快设备运转速度", "C": "减少返工返修", "D": "小批量快速周转", "E": "投入更多的设备进行生产"}, "answer": "ACD"}, {"id": "multi-31", "section": "multi", "chapter": "精益管理", "num": 31, "question": "以下哪些工具是精益管理的基础工具____", "options": {"A": "5S", "B": "目视管理/可视化", "C": "标准作业", "D": "均衡生产", "E": "多能工"}, "answer": "ABCD"}, {"id": "multi-32", "section": "multi", "chapter": "精益管理", "num": 32, "question": "关于快速换型 SMED, 以下陈述中正确的是____", "options": {"A": "换型作业可分为“内换型作业”和“外换型作业”", "B": "应尽量将“内换型作业”转变为“外换型作业”", "C": "应尽量减少“内换型作业”时间", "D": "应设专人完成全部换型作业", "E": "应尽量减少手工换型作业"}, "answer": "ABC"}, {"id": "multi-33", "section": "multi", "chapter": "精益管理", "num": 33, "question": "以下方法中，哪些是精益改善常用方法____", "options": {"A": "价值流分析 VSM", "B": "设备综合效率 OEE", "C": "改善提案", "D": "节拍时间 Takt Time", "E": "A3报告"}, "answer": "ACE"}, {"id": "multi-34", "section": "multi", "chapter": "精益管理", "num": 34, "question": "按照《组织精益管理评价准则》 (T/CAQ 10103—2016) 以下____构 成了组织精益管理的框架", "options": {"A": "领导承诺", "B": "系统协同", "C": "价值流改善", "D": "价值实现", "E": "驱动要素"}, "answer": "BCDE"}, {"id": "multi-35", "section": "multi", "chapter": "现场管理方法", "num": 35, "question": "判别目视化管理是否有效的原则是____", "options": {"A": "判断结果不会因人而异", "B": "显示状态", "C": "无论谁都能判明好坏", "D": "能够迅速判断，精度高", "E": "可以快速找到所需信息和物品"}, "answer": "ACD"}, {"id": "multi-36", "section": "multi", "chapter": "现场管理方法", "num": 36, "question": "作业标准的要求有____", "options": {"A": "明确的工艺流程与布局", "B": "各种材料按时、按质、按量到位", "C": "明确的人员配置要求", "D": "明确的工作程序与作业步骤", "E": "现场布局图"}, "answer": "ABCD"}, {"id": "multi-37", "section": "multi", "chapter": "现场管理方法", "num": 37, "question": "标准文件有____", "options": {"A": "工序能力表", "B": "标准作业组合表", "C": "时间观测表", "D": "标准作业表", "E": "作业流程图"}, "answer": "ABD"}, {"id": "multi-38", "section": "multi", "chapter": "现场管理方法", "num": 38, "question": "在《企业现场管理准则》(GB/T 29590—2013) 标准中，推进要素包____", "options": {"A": "领导作用", "B": "战略秉承", "C": "员工素质", "D": "安全环保", "E": "组织保证"}, "answer": "ABCE"}, {"id": "multi-39", "section": "multi", "chapter": "质量管理小组活动", "num": 39, "question": "开展 QC 小组活动应遵循的原则有____", "options": {"A": "全员参与", "B": "持续改进", "C": "遵循PDCA", "D": "持续精益", "E": "基于客观事实和应用统计方法"}, "answer": "ABCE"}, {"id": "multi-40", "section": "multi", "chapter": "质量管理小组活动", "num": 40, "question": "国际质量管理小组大会 (ICQCC)是于1976年由____三家组织共同发起的", "options": {"A": "日本科学技术联盟", "B": "韩国标准化协会", "C": "中国质量协会", "D": "新加坡质量学院", "E": "财团法人先锋质量管理学术研究基金会"}, "answer": "ABE"}, {"id": "multi-41", "section": "multi", "chapter": "质量管理小组活动", "num": 41, "question": "根据课题来源， QC 小组活动的课题类型一般包括____", "options": {"A": "自主性课题", "B": "上级下达的指令型课题", "C": "现场型课题", "D": "质量部门推荐的指导性课题", "E": "管理型课题"}, "answer": "ABD"}, {"id": "multi-42", "section": "multi", "chapter": "质量管理小组活动", "num": 42, "question": "QC 小组活动的特点有____", "options": {"A": "高度的民主性", "B": "严密的科学性", "C": "广泛的群众性", "D": "明显的自主性", "E": "清晰的目标性"}, "answer": "ABCD"}, {"id": "multi-43", "section": "multi", "chapter": "质量工具概述", "num": 43, "question": "下列属于计数型数据的是____", "options": {"A": "试验器皿的容积", "B": "不合格零件数", "C": "产品合格率", "D": "铸件的缺陷数", "E": "不合格焊缝的长度"}, "answer": "BCD"}, {"id": "multi-44", "section": "multi", "chapter": "质量工具概述", "num": 44, "question": "下列五个统计量中，描述数据波动大小的是____", "options": {"A": "方差", "B": "极差", "C": "众数", "D": "标准差", "E": "中位数"}, "answer": "ABD"}, {"id": "multi-45", "section": "multi", "chapter": "质量工具概述", "num": 45, "question": "可以作为原假设的命题有____", "options": {"A": "两个总体方差相等", "B": "两个样本均值相等", "C": "总体不合格品率不超过0.01", "D": "样本的不合格品率不超过0.05", "E": "总体均值大于等于0.3"}, "answer": "ACE"}, {"id": "multi-46", "section": "multi", "chapter": "质量工具概述", "num": 46, "question": "统计推断中所发生的第 I 类错误是____", "options": {"A": "把正常判为异常", "B": "把异常判为正常", "C": "弃真", "D": "取伪", "E": "以上都不对"}, "answer": "AC"}, {"id": "multi-47", "section": "multi", "chapter": "质量工具概述", "num": 47, "question": "测得某批电阻中五个电阻的阻值分别为8.1、7.9、8.0、8.1、8.2,则下 列叙述正确的是____", "options": {"A": "样本极差为0.3", "B": "样本中位数为8.1", "C": "样本均值为8.06", "D": "样本众数为8.0", "E": "样本标准差为0.3"}, "answer": "ABC"}, {"id": "multi-48", "section": "multi", "chapter": "过程分析与数据收集", "num": 48, "question": "为了达到对过程进行分析的目的，绘制的流程图应反映出____", "options": {"A": "关键环节", "B": "瓶颈过程", "C": "非增值活动", "D": "绘图人员", "E": "绘制时间"}, "answer": "ABC"}, {"id": "multi-49", "section": "multi", "chapter": "过程分析与数据收集", "num": 49, "question": "收集数据时可采用的抽样方法包括____", "options": {"A": "随机抽样", "B": "分层抽样", "C": "整群抽样", "D": "抽样检验", "E": "假设检验"}, "answer": "ABC"}, {"id": "multi-50", "section": "multi", "chapter": "过程分析与数据收集", "num": 50, "question": "调查表格的基本要求是____", "options": {"A": "详细", "B": "明确", "C": "全面", "D": "方便", "E": "有量化指标"}, "answer": "BCD"}, {"id": "multi-51", "section": "multi", "chapter": "过程分析与数据收集", "num": 51, "question": "调查表基本上应包含的部分有____", "options": {"A": "对调查目的的说明", "B": "对收集信息要求的说明", "C": "记录位置", "D": "对数据分析的要求", "E": "对调查人员的要求"}, "answer": "ABC"}, {"id": "multi-52", "section": "multi", "chapter": "数据整理与分析", "num": 52, "question": "用来描述数据分布中心的常见统计量包括____", "options": {"A": "平均值", "B": "变异系数", "C": "中位数", "D": "众数", "E": "标准偏差"}, "answer": "ACD"}, {"id": "multi-53", "section": "multi", "chapter": "数据整理与分析", "num": 53, "question": "关于散布图，以下说法不正确的是____", "options": {"A": "散布图可以分析两个连续变量之间的相关关系", "B": "散布图呈现强相关关系，则两个变量之间存在因果关系", "C": "散布图可以帮助了解过程数据的分布", "D": "散布图呈现不相关关系，则两个变量一定不相关", "E": "散布图适用于连续型数据"}, "answer": "BCD"}, {"id": "multi-54", "section": "multi", "chapter": "数据整理与分析", "num": 54, "question": "关于数据的描述，以下说法正确的是____", "options": {"A": "对称分布的数据，均值和中位值相等", "B": "右偏分布的数据，均值<中位数", "C": "右偏分布的数据，均值>中位数", "D": "左偏分布的数据，均值<中位数", "E": "左偏分布的数据，均值>中位数"}, "answer": "ACD"}, {"id": "multi-55", "section": "multi", "chapter": "数据整理与分析", "num": 55, "question": "关于直方图，以下说法正确的是____", "options": {"A": "直方图可以帮助了解过程数据的分布特征", "B": "直方图适用于连续型数据", "C": "直方图的功能与运行图类似", "D": "直方图可以反映数据随时间的变化", "E": "直方图的分组可以自主确定"}, "answer": "AB"}, {"id": "multi-56", "section": "multi", "chapter": "原因分析与解决方案", "num": 56, "question": "因果图的分析过程中不包括以下____", "options": {"A": "阐明要分析的质量问题", "B": "收集产品测量数据", "C": "将质量问题放在因果图右侧", "D": "寻找潜在原因", "E": "评估原因与问题之间的相关程度"}, "answer": "BE"}, {"id": "multi-57", "section": "multi", "chapter": "原因分析与解决方案", "num": 57, "question": "针对质量问题，部门领导希望成员积极发表意见，同时希望将成员们的 意见分类汇总，这时可用的方法包括____", "options": {"A": "头脑风暴法", "B": "排列图", "C": "亲和图", "D": "假设检验", "E": "质量功能展开"}, "answer": "AC"}, {"id": "multi-58", "section": "multi", "chapter": "统计过程控制", "num": 58, "question": "下列情况中可以判异的有____", "options": {"A": "连续5点中有4点落在中心线同一侧的B 区以外", "B": "连续15点落在中心线两侧的C 区内", "C": "连续9点落在中心线同一侧", "D": "连续3点递增或递减", "E": "连续14点中相邻点交替上下"}, "answer": "BCD"}, {"id": "multi-59", "section": "multi", "chapter": "统计过程控制", "num": 59, "question": "过程能力的大小与过程的波动有很大关系，以下哪种说法是正确的____", "options": {"A": "过程的标准差越大，过程能力越小", "B": "过程的标准差越大，过程能力越大", "C": "过程的标准差越小，过程能力越小", "D": "过程的标准差越小，过程能力越大", "E": "过程能力的大小与过程标准差无关"}, "answer": "AD"}, {"id": "single-1", "section": "single", "chapter": "质量", "num": 1, "question": "本次“质量主题观影活动——《大国质量》”在哪里举行____", "options": {"A": "1号综合楼222会议室", "B": "1号综合楼309报告厅", "C": "2号综合楼307会议室", "D": "3号综合楼F001会议室"}, "answer": "B"}, {"id": "single-2", "section": "single", "chapter": "质量", "num": 2, "question": "以下属于产品基本型质量特性的是____", "options": {"A": "价格低廉", "B": "外观精美", "C": "使用安全", "D": "色彩好看"}, "answer": "C"}, {"id": "single-3", "section": "single", "chapter": "质量", "num": 3, "question": "“质量”是指“客体的一组固有特性满足要求的程度”，组织应满足的 “要求” 不 包括____", "options": {"A": "与顾客签订的合同要求", "B": "顾客没有明示的行业惯例和常识", "C": "法律法规规定的要求", "D": "竞争对手对其顾客的承诺"}, "answer": "D"}, {"id": "single-4", "section": "single", "chapter": "质量", "num": 4, "question": "质量环描述质量形成的起点是____", "options": {"A": "顾客需求", "B": "产品设计", "C": "批量生产", "D": "成品检验"}, "answer": "A"}, {"id": "single-5", "section": "single", "chapter": "质量", "num": 5, "question": "质量意识是对质量的认知及态度，企业中应具备质量意识的是____", "options": {"A": "高层管理者", "B": "全体员工", "C": "质量部门人员", "D": "生产一线员工"}, "answer": "B"}, {"id": "single-6", "section": "single", "chapter": "质量", "num": 6, "question": "影响质量五大要素不包含____", "options": {"A": "人", "B": "机", "C": "资金", "D": "料"}, "answer": "C"}, {"id": "single-7", "section": "single", "chapter": "质量", "num": 7, "question": "标准作业指导书 SOP 文件，在质量管理体系文件中属于____级文件", "options": {"A": "一", "B": "二", "C": "三", "D": "四"}, "answer": "C"}, {"id": "single-8", "section": "single", "chapter": "质量管理", "num": 8, "question": "PDCA 计划阶段核心工作是____", "options": {"A": "分析问题设定目标", "B": "执行工作计划", "C": "对比实际与目标", "D": "固化成功经验"}, "answer": "A"}, {"id": "single-9", "section": "single", "chapter": "质量管理", "num": 9, "question": "____在 1961 年首次提出全面质量管理的概念", "options": {"A": "戴明", "B": "朱兰", "C": "费根鲍姆", "D": "克劳斯比"}, "answer": "C"}, {"id": "single-10", "section": "single", "chapter": "质量管理", "num": 10, "question": "统计质量控制阶段核心工具是____", "options": {"A": "检验记录表", "B": "控制图", "C": "树图", "D": "直方图"}, "answer": "B"}, {"id": "single-11", "section": "single", "chapter": "质量管理", "num": 11, "question": "质量管理体系中，PDCA 循环的 “P” 代表什么？____", "options": {"A": "执行", "B": "检查", "C": "计划", "D": "处理"}, "answer": "C"}, {"id": "single-12", "section": "single", "chapter": "质量管理", "num": 12, "question": "朱兰三部曲不包含____", "options": {"A": "质量培训", "B": "质量策划", "C": "质量控制", "D": "质量改进"}, "answer": "A"}, {"id": "single-13", "section": "single", "chapter": "质量管理", "num": 13, "question": "质量管理体系文件一般不包括以下哪种？____", "options": {"A": "质量手册", "B": "程序文件", "C": "质量计划", "D": "作业指导书"}, "answer": "C"}, {"id": "single-14", "section": "single", "chapter": "全面质量管理基础工作", "num": 14, "question": "ISO9001 认证监督审核每____个月开展一次", "options": {"A": "12", "B": "24", "C": "36", "D": "6"}, "answer": "A"}, {"id": "single-15", "section": "single", "chapter": "全面质量管理基础工作", "num": 15, "question": "以下对于 “检验” 和 “检测” 的描述，不正确的有____", "options": {"A": "“检验” 等同于 “检测”", "B": "检测是按照程序确定合格评定对象的一个或多个特性", "C": "检验是符合性审查", "D": "检测为检验服务"}, "answer": "A"}, {"id": "single-16", "section": "single", "chapter": "全面质量管理基础工作", "num": 16, "question": "质量培训正确顺序是____", "options": {"A": "实施→需求→策划→评估", "B": "需求→策划→实施→评估", "C": "策划→需求→实施→评估", "D": "需求→实施→策划"}, "answer": "B"}, {"id": "single-17", "section": "single", "chapter": "质量文化和品牌", "num": 17, "question": "质量制度文化核心作用是____", "options": {"A": "塑造员工价值观", "B": "规范作业行为", "C": "美化厂区环境", "D": "对外宣传产品"}, "answer": "B"}, {"id": "single-18", "section": "single", "chapter": "质量文化和品牌", "num": 18, "question": "质量文化内容通常可以分为几个层次，其中____位于最核心，是质量文化的精髓", "options": {"A": "精神文化层", "B": "行为文化层", "C": "制度文化层", "D": "物质文化层"}, "answer": "A"}, {"id": "single-19", "section": "single", "chapter": "质量文化和品牌", "num": 19, "question": "质量文化与品牌的关系是____", "options": {"A": "品牌无需质量支撑", "B": "质量文化不影响品牌形象", "C": "品牌是质量文化基础", "D": "质量文化支撑品牌建设"}, "answer": "D"}, {"id": "single-20", "section": "single", "chapter": "质量文化和品牌", "num": 20, "question": "以下关于质量文化 “全员参与” 原则的描述，错误的是____", "options": {"A": "质量文化建设主要是中高层领导的事情", "B": "质量文化建设要以人为本", "C": "质量文化建设要确保员工从情感和理智上认同", "D": "只有全员参与，才能促进质量文化的发展与优化"}, "answer": "A"}, {"id": "single-21", "section": "single", "chapter": "质量文化和品牌", "num": 21, "question": "下列属于质量物质文化的是____", "options": {"A": "质量第一价值观", "B": "精密检测仪器", "C": "质量管理制度", "D": "企业愿景"}, "answer": "B"}, {"id": "single-22", "section": "single", "chapter": "质量文化和品牌", "num": 22, "question": "关于质量文化建设，以下说法正确的是____", "options": {"A": "质量文化建设要与企业其他管理相融合", "B": "质量文化建设要与质量管理相融合", "C": "质量文化应单独建立管理体系", "D": "A 和 B"}, "answer": "D"}, {"id": "single-23", "section": "single", "chapter": "质量管理体系", "num": 23, "question": "基于事实的决策原则指决策依靠____", "options": {"A": "管理者经验", "B": "员工意见", "C": "客观数据", "D": "主观预估"}, "answer": "C"}, {"id": "single-24", "section": "single", "chapter": "质量管理体系", "num": 24, "question": "各级人员都是组织之本，表述的是七项质量管理原则中____原则的含义", "options": {"A": "以顾客为关注焦点", "B": "领导作用", "C": "全员积极参与", "D": "过程方法"}, "answer": "C"}, {"id": "single-25", "section": "single", "chapter": "质量管理体系", "num": 25, "question": "质量方针文件属于____级体系文件", "options": {"A": "一", "B": "二", "C": "三", "D": "四"}, "answer": "A"}, {"id": "single-26", "section": "single", "chapter": "质量管理体系", "num": 26, "question": "组织的质量方针应____", "options": {"A": "自下而上地提出", "B": "可获取并形成文件", "C": "包含具体的质量目标", "D": "规定产品和服务的具体要求"}, "answer": "B"}, {"id": "single-27", "section": "single", "chapter": "质量管理体系", "num": 27, "question": "轻微不合格需采取____", "options": {"A": "纠正措施", "B": "预防措施", "C": "处罚员工", "D": "停产"}, "answer": "A"}, {"id": "single-28", "section": "single", "chapter": "质量管理体系", "num": 28, "question": "某企业将 “产品一次交验合格率≥98%” 作为质量目标，此目标不符合以下哪项要 求？____", "options": {"A": "与质量方针保持一致", "B": "可测量", "C": "考虑适用的要求", "D": "分解到相关职能和层次"}, "answer": "D"}, {"id": "single-29", "section": "single", "chapter": "质量管理体系", "num": 29, "question": "以下哪项属于 “成文信息”？____", "options": {"A": "员工口头传达的操作要求", "B": "设备上的警示标签", "C": "未归档的会议记录", "D": "头脑中的操作流程"}, "answer": "B"}, {"id": "single-30", "section": "single", "chapter": "卓越绩效模式", "num": 30, "question": "卓越绩效结果三角不包含____", "options": {"A": "顾客结果", "B": "财务结果", "C": "员工结果", "D": "单次培训结果"}, "answer": "D"}, {"id": "single-31", "section": "single", "chapter": "卓越绩效模式", "num": 31, "question": "《卓越绩效评价准则》九条基本理念，不属于的是____", "options": {"A": "资源配置", "B": "战略导向", "C": "系统管理", "D": "合作共赢"}, "answer": "A"}, {"id": "single-32", "section": "single", "chapter": "卓越绩效模式", "num": 32, "question": "战略目标来源于____", "options": {"A": "管理者意愿", "B": "月度报表", "C": "内外部环境分析", "D": "生产数据"}, "answer": "C"}, {"id": "single-33", "section": "single", "chapter": "卓越绩效模式", "num": 33, "question": "以下属于《卓越绩效评价准则》九条基本理念的是____", "options": {"A": "志向远大", "B": "战略导向", "C": "积极向上", "D": "求真务实"}, "answer": "B"}, {"id": "single-34", "section": "single", "chapter": "卓越绩效模式", "num": 34, "question": "企业社会责任不包含____", "options": {"A": "环保合规", "B": "产品安全", "C": "员工福利", "D": "提升产量"}, "answer": "D"}, {"id": "single-35", "section": "single", "chapter": "卓越绩效模式", "num": 35, "question": "组织在制定战略时，首先应考虑____", "options": {"A": "竞争对手", "B": "顾客需求", "C": "员工需求"}, "answer": "B"}, {"id": "single-36", "section": "single", "chapter": "方针目标管理", "num": 36, "question": "原则中 M 代表____", "options": {"A": "可衡量", "B": "具体", "C": "可实现", "D": "相关性"}, "answer": "A"}, {"id": "single-37", "section": "single", "chapter": "方针目标管理", "num": 37, "question": "方针目标最终由____ 决定", "options": {"A": "上级领导", "B": "各部门负责人", "C": "执行团队负责人", "D": "投票"}, "answer": "A"}, {"id": "single-38", "section": "single", "chapter": "方针目标管理", "num": 38, "question": "树图用于目标____展开", "options": {"A": "横向", "B": "纵向", "C": "跨部门", "D": "长期"}, "answer": "B"}, {"id": "single-39", "section": "single", "chapter": "方针目标管理", "num": 39, "question": "短期目标周期一般为____", "options": {"A": "1 年", "B": "3 年", "C": "5 年", "D": "10 年"}, "answer": "A"}, {"id": "single-40", "section": "single", "chapter": "方针目标管理", "num": 40, "question": "方针目标纵向展开时使用工具是____", "options": {"A": "网络图", "B": "矩阵图", "C": "树图", "D": "关联图"}, "answer": "C"}, {"id": "single-41", "section": "single", "chapter": "方针目标管理", "num": 41, "question": "方针目标管理的最终目的是____", "options": {"A": "提高企业效益", "B": "完成目标", "C": "满足领导要求"}, "answer": "A"}, {"id": "single-42", "section": "single", "chapter": "方针目标管理", "num": 42, "question": "方针目标的制定应遵循____原则", "options": {"A": "自上而下", "B": "自下而上", "C": "上下结合"}, "answer": "C"}, {"id": "single-43", "section": "single", "chapter": "标杆管理", "num": 43, "question": "标杆差距分析属于____阶段", "options": {"A": "策划", "B": "项目实施", "C": "持续完善", "D": "最终评审"}, "answer": "B"}, {"id": "single-44", "section": "single", "chapter": "标杆管理", "num": 44, "question": "标杆管理组织策划阶段工作____", "options": {"A": "选择标杆对象", "B": "收集标杆数据", "C": "组建项目团队", "D": "完善数据库"}, "answer": "C"}, {"id": "single-45", "section": "single", "chapter": "标杆管理", "num": 45, "question": "内部标杆对标对象是____", "options": {"A": "竞争对手", "B": "行业外企业", "C": "国内顶尖企业", "D": "内部优秀部门"}, "answer": "D"}, {"id": "single-46", "section": "single", "chapter": "标杆管理", "num": 46, "question": "以下不属于标杆管理三阶段的是____", "options": {"A": "目标设定", "B": "组织策划", "C": "项目实施", "D": "持续完善"}, "answer": "A"}, {"id": "single-47", "section": "single", "chapter": "标杆管理", "num": 47, "question": "选定标杆项目核心要素____", "options": {"A": "具有战略价值", "B": "行业最佳实践", "C": "高层领导参与", "D": "具有改进潜力"}, "answer": "D"}, {"id": "single-48", "section": "single", "chapter": "标杆管理", "num": 48, "question": "标杆管理第一步____", "options": {"A": "确定标杆对象", "B": "收集对标数据", "C": "分析差距", "D": "实施改进"}, "answer": "A"}, {"id": "single-49", "section": "single", "chapter": "标杆管理", "num": 49, "question": "以下不属于标杆分类____", "options": {"A": "流程标杆管理", "B": "战略标杆管理", "C": "组织标杆管理", "D": "人员标杆管理"}, "answer": "D"}, {"id": "single-50", "section": "single", "chapter": "六西格玛管理", "num": 50, "question": "DMAIC 分析阶段核心工作是____", "options": {"A": "确定关键质量特性", "B": "识别主要原因", "C": "制定控制计划", "D": "验证改善方案"}, "answer": "B"}, {"id": "single-51", "section": "single", "chapter": "六西格玛管理", "num": 51, "question": "关于精益六西格玛错误描述____", "options": {"A": "精益核心消除浪费", "B": "六西格玛减少波动", "C": "只是两套工具简单相加", "D": "二者互补融合"}, "answer": "C"}, {"id": "single-52", "section": "single", "chapter": "六西格玛管理", "num": 52, "question": "六西格玛 CTQ 含义____", "options": {"A": "关键质量特性", "B": "成本指标", "C": "检验数据", "D": "过程标准"}, "answer": "A"}, {"id": "single-53", "section": "single", "chapter": "六西格玛管理", "num": 53, "question": "测量阶段工作____", "options": {"A": "确定 CTQ", "B": "制定控制计划", "C": "寻找关键因子", "D": "验证测量系统有效性"}, "answer": "D"}, {"id": "single-54", "section": "single", "chapter": "六西格玛管理", "num": 54, "question": "项目立项书在____阶段编制", "options": {"A": "分析", "B": "测量", "C": "定义", "D": "改进"}, "answer": "C"}, {"id": "single-55", "section": "single", "chapter": "六西格玛管理", "num": 55, "question": "定义阶段不包含工作____", "options": {"A": "组建项目团队", "B": "编制立项表", "C": "制定改善措施", "D": "预估财务收益"}, "answer": "C"}, {"id": "single-56", "section": "single", "chapter": "六西格玛管理", "num": 56, "question": "六西格玛改进步骤正确顺序____", "options": {"A": "定义、测量、分析、改进、控制", "B": "定义、分析、测量、改进、控制", "C": "测量、定义、分析、改进、控制", "D": "分析、定义、测量、改进"}, "answer": "A"}, {"section": "single", "chapter": "六西格玛管理", "question": "以下哪项不属于六西格玛项目选择的标准____", "options": {"A": "意义重大", "B": "可管理", "C": "缺乏资源", "D": "界限清晰"}, "answer": "C", "num": 57, "id": "single-57"}, {"id": "single-58", "section": "single", "chapter": "六西格玛管理", "num": 58, "question": "展示数据分布用____", "options": {"A": "直方图", "B": "饼图", "C": "折线图", "D": "散点图"}, "answer": "A"}, {"id": "single-59", "section": "single", "chapter": "六西格玛管理", "num": 59, "question": "头脑风暴遵循原则____", "options": {"A": "自由畅想", "B": "延迟评判", "C": "以量求质", "D": "以上全部"}, "answer": "D"}, {"id": "single-60", "section": "single", "chapter": "精益管理", "num": 60, "question": "关于精益两大支柱之一自働化（Jidoka）说法正确的是____", "options": {"A": "自动化区别于普通自动化，出现不良可自动停机", "B": "自动化完全依靠设备，无需人工参与", "C": "自动化核心目的是提升生产速度", "D": "自动化不需要配套防错工具"}, "answer": "A"}, {"id": "single-61", "section": "single", "chapter": "精益管理", "num": 61, "question": "价值流图分析主要用于____", "options": {"A": "展示企业组织架构", "B": "分析产品成本构成", "C": "识别流程中的浪费和改进机会", "D": "制定企业战略规划"}, "answer": "C"}, {"id": "single-62", "section": "single", "chapter": "精益管理", "num": 62, "question": "价值流图绘制对象不包含____", "options": {"A": "原材料到成品的实物物流", "B": "销售下发订单信息流", "C": "企业月度财务报表", "D": "各工序之间等待时间"}, "answer": "C"}, {"id": "single-63", "section": "single", "chapter": "现场管理方法", "num": 63, "question": "可实时展示生产状态的目视化工具是____", "options": {"A": "检验记录本", "B": "排列图", "C": "安灯生产看板", "D": "直方图"}, "answer": "C"}, {"id": "single-64", "section": "single", "chapter": "现场管理方法", "num": 64, "question": "交通红绿灯采用的原理是____", "options": {"A": "相符原理", "B": "顺序原理", "C": "复制原理", "D": "警告原理"}, "answer": "D"}, {"id": "single-65", "section": "single", "chapter": "现场管理方法", "num": 65, "question": "标准作业的核心是____", "options": {"A": "增加作业人员数量", "B": "消除操作动作浪费", "C": "延长每日作业时长", "D": "增加生产产品种类"}, "answer": "B"}, {"id": "single-66", "section": "single", "chapter": "现场管理方法", "num": 66, "question": "全员设备维护 TPM 中，操作工每日自主开展的保养是____", "options": {"A": "重大故障维修保养", "B": "日常自主保养", "C": "年度大修", "D": "整机配件更换"}, "answer": "B"}, {"section": "single", "chapter": "质量管理小组活动", "question": "指令性目标的课题，不需要进行的工作是____，但要对目标进行可行性分析；自定目标的课题，则必须进行该项工作来确定目标。", "options": {"A": "目标依据说明", "B": "目标可行性分析", "C": "现状调查"}, "answer": "C", "num": 67, "id": "single-67"}, {"id": "single-68", "section": "single", "chapter": "质量管理小组活动", "num": 68, "question": "单个 QC 小组理想组员人数为____", "options": {"A": "1–2 人", "B": "3–10 人", "C": "15–20 人", "D": "20 人以上"}, "answer": "B"}, {"id": "single-69", "section": "single", "chapter": "质量管理小组活动", "num": 69, "question": "创新型课题所提出的总体方案主要来源于____", "options": {"A": "课题本身", "B": "借鉴其他领域或过往经验", "C": "课题目标", "D": "查询相关资料"}, "answer": "B"}, {"id": "single-70", "section": "single", "chapter": "质量管理小组活动", "num": 70, "question": "QC 小组活动循环最后一步是____", "options": {"A": "改善成果标准化", "B": "收集基础数据", "C": "问题原因分析", "D": "制定对策方案"}, "answer": "A"}, {"id": "single-71", "section": "single", "chapter": "质量工具概述", "num": 71, "question": "用于从众多不良问题中区分主要问题的图表是____", "options": {"A": "直方图", "B": "排列图", "C": "散布图", "D": "流程图"}, "answer": "B"}, {"id": "single-72", "section": "single", "chapter": "统计技术基础", "num": 72, "question": "下列属于计数型数据的是____", "options": {"A": "工件长度", "B": "生产车间温度", "C": "产品重量", "D": "每班不良品数量"}, "answer": "D"}, {"id": "single-73", "section": "single", "chapter": "统计技术基础", "num": 73, "question": "设 10 个数据的均值为 9.26, 如今又得第 11 个数据为 9.92, 则此 11 个数据的 均值为____", "options": {"A": "9.23", "B": "9.32", "C": "9.74", "D": "9.59"}, "answer": "B"}, {"id": "single-74", "section": "single", "chapter": "统计技术基础", "num": 74, "question": "单工序一次合格率 99%，连续 3 件产品全部合格概率为____", "options": {"A": "97.03%", "B": "98%", "C": "99%", "D": "95.2%"}, "answer": "A"}, {"id": "single-75", "section": "single", "chapter": "统计技术基础", "num": 75, "question": "用于展示两个变量之间线性相关关系的图表是____", "options": {"A": "直方图", "B": "散布图", "C": "条形图", "D": "控制图"}, "answer": "B"}, {"id": "single-76", "section": "single", "chapter": "过程分析与数据收集", "num": 76, "question": "适合生产现场实时记录不良缺陷的数据收集工具是____", "options": {"A": "检查表", "B": "文献研究法", "C": "客户访谈", "D": "实验室试验"}, "answer": "A"}, {"id": "single-77", "section": "single", "chapter": "过程分析与数据收集", "num": 77, "question": "为了研究生产过程中温度对产品质量的影响，最合适的数据收集方法是____", "options": {"A": "焦点问题小组法", "B": "实验法", "C": "访谈法", "D": "文献研究法"}, "answer": "B"}, {"id": "single-78", "section": "single", "chapter": "过程分析与数据收集", "num": 78, "question": "消除流程瓶颈的核心方法是____", "options": {"A": "在瓶颈前堆积库存", "B": "加快瓶颈前工序速度", "C": "提升瓶颈工序处理能力", "D": "减少产线投入产品数量"}, "answer": "C"}, {"id": "single-79", "section": "single", "chapter": "数据整理与分析", "num": 79, "question": "下列统计量中，用于描述数据离散波动程度的是____", "options": {"A": "中位数", "B": "平均值", "C": "标准差", "D": "众数"}, "answer": "C"}, {"id": "short-1", "section": "short", "num": 1, "chapter": "综合简答", "question": "企业管理及生产活动中存在哪七种典型的浪费？", "answer": "企业管理及生产活动中存在的七种典型浪费是过量生产、等待、运输、额外作业、库存、多余动作和返工返修。"}, {"id": "short-2", "section": "short", "num": 2, "chapter": "综合简答", "question": "什么是节拍时间（Takt Time），如何计算？", "answer": "节拍时间是满足客户需求的单件产品目标生产时长。 计算公式：节拍时间 = 每日有效工作时间 ÷ 每日客户需求数量。"}, {"id": "short-3", "section": "short", "num": 3, "chapter": "综合简答", "question": "推行目视化管理的步骤是什么？", "answer": "第一步：安全等各类指示清晰；给关键区域画出指示方向，并悬挂标志；展示各类设备的识别标识；标识物料名称、质量、数量（包括最大最小量）；在工具和零部件上贴上标牌；关键指标有仪表标识并显示正常范围；运用图表公布 5S 审查结果。\n第二步：使用图示阐明标准化作业流程（包括安全、质量关键点），并公开展示；明确标准作业流程，将标准流程和实际作业时间可视化；将设备点巡检流程公开展示；在设备上标识检测点，并使用一级维护目视卡等方法。\n第三步：安装状态灯，显示设备运行状态；使用颜色编码板和显示板显示出生产计划，产量达成，异常状态；展示对存在问题的实时跟踪反馈。\n第四步：安装并使用业绩跟踪板，展示关键业绩指标；展示指标发展趋势。\n第五步：组织架构、人员、能力等可视化；展示问题统计分析结果；使用图表及时发布自主改善计划、状况和现场改善审查结果；传达改善活动的成功事例。\n第六步：对人才梯队建设的可视化，图示可视化的培训环境，标识能力培养标准及培训效率和质量。"}, {"id": "short-4", "section": "short", "num": 4, "chapter": "综合简答", "question": "简述标准 QC 小组完整活动循环步骤。", "answer": "（1）选定课题问题\n（2）开展现状调查\n（3）分析确定主要原因\n（4）制定并实施改善对策\n（5）检查改善实施效果\n（6）将有效改善成果标准化\n（7）规划下一改善课题"}, {"id": "short-5", "section": "short", "num": 5, "chapter": "综合简答", "question": "质量管理工具中有一类主要用于管理和策划的，试举出一些这类质量工具的实例。", "answer": "用于管理和策划的工具有头脑风暴、亲和图、矩阵图、树图等。"}, {"id": "short-6", "section": "short", "num": 6, "chapter": "综合简答", "question": "什么是设备综合效率 OEE，由哪三大指标构成？", "answer": "OEE 即设备综合效率。三大构成指标：设备时间稼动率、设备性能开动率、产品良品率。"}, {"id": "short-7", "section": "short", "num": 7, "chapter": "综合简答", "question": "什么是计量数据和计数数据？怎样区分它们？", "answer": "计量数据：可以连续取值的，或者说可以用测量工具具体测量出小数点以下数值的数据。计数数据：不能连续取值的，或者说即使利用测量工具也得不到小数点以下数值的数据。"}, {"id": "short-8", "section": "short", "num": 8, "chapter": "综合简答", "question": "根据数据类型，简述三类控制图及代表图表。", "answer": "计量值控制图：均值极差图、均值标准差图\n计点值（缺陷数）控制图：c 图、u 图\n计件值（不良品数）控制图：p 图、np 图"}, {"id": "short-9", "section": "short", "num": 9, "chapter": "综合简答", "question": "请描述流程图的定义，以及流程图的作用。", "answer": "流程图是用图形的方式表现出所要研究的过程。流程图的作用：通过代表各种活动的图形来了解过程，绘制和分析流程图可以对过程进行认识和沟通，发现过程中可能的问题源以及发现改进的机会。"}, {"id": "short-10", "section": "short", "num": 10, "chapter": "综合简答", "question": "简述过程能力指数 Cp 与 Cpk 的关系。", "answer": "Cp 仅对比规格宽度与过程波动，不考虑均值偏移；Cpk 同时兼顾过程波动和均值相对规格中心的偏移；Cpk 数值永远小于等于 Cp。"}, {"id": "short-11", "section": "short", "num": 11, "chapter": "综合简答", "question": "质量管理的八项原则是什么？", "answer": "以顾客为关注焦点、领导作用、全员参与、过程方法、管理的系统方法、持续改进、基于事实的决策方法、与供方互利的关系。"}, {"id": "short-12", "section": "short", "num": 12, "chapter": "综合简答", "question": "简述 5S 五项内容及各自核心目的。", "answer": "整理：区分现场必需品与非必需品，减少现场杂物\n整顿：必需品定点定置摆放，取用高效\n清扫：清扫现场脏污，提前发现设备故障\n清洁：标准化维持前 3S 成果\n素养：培养员工自觉长期执行前 4S 的习惯"}, {"id": "short-13", "section": "short", "num": 13, "chapter": "综合简答", "question": "质量改进的基本过程是什么？", "answer": "质量改进的基本过程是 PDCA 循环。通过不断地计划、执行、检查和处理，实现质量的持续改进。"}, {"id": "short-14", "section": "short", "num": 14, "chapter": "综合简答", "question": "质量控制与质量改进的区别是什么？", "answer": "质量控制：维持现有质量稳定，防止质量水平下滑； 质量改进：将现有质量水平提升至更高标准。"}, {"id": "short-15", "section": "short", "num": 15, "chapter": "综合简答", "question": "质量管理体系文件通常包括哪些？", "answer": "通常包括质量手册、程序文件、作业指导书和质量记录。质量手册阐述质量管理体系范围和方针；程序文件规定活动流程和方法；作业指导书提供具体操作指导；质量记录用于记录质量活动结果。"}, {"id": "short-16", "section": "short", "num": 16, "chapter": "综合简答", "question": "什么是价值流图 VSM，分为哪两类？", "answer": "价值流图是梳理从订单下发到成品交付全价值流程的图表工具；分为现状价值流图、未来改善价值流图。"}, {"id": "short-17", "section": "short", "num": 17, "chapter": "综合简答", "question": "简述现场质量管理采用的措施原则。", "answer": "原则上有质量预防、质量维持、质量改进、质量验证四个方面。质量预防是提前采取措施防止质量问题发生；质量维持确保现有质量水平稳定；质量改进致力于提升质量；质量验证对质量是否符合要求进行确认。"}, {"id": "short-18", "section": "short", "num": 18, "chapter": "综合简答", "question": "推行六西格玛管理的核心目标是什么？", "answer": "最大限度降低流程波动，趋近零缺陷；以数据和事实为依据开展决策；同步提升客户满意度与企业经营收益。"}, {"id": "short-19", "section": "short", "num": 19, "chapter": "综合简答", "question": "质量检验的主要功能有哪些？", "answer": "主要功能包括鉴别功能（判断产品是否符合质量标准）、把关功能（防止不合格品流入下一道工序或交付给顾客）、预防功能（通过检验发现质量问题趋势，采取预防措施）和报告功能（将检验结果和质量信息反馈给相关部门）。"}, {"id": "short-20", "section": "short", "num": 20, "chapter": "综合简答", "question": "精益管理与六西格玛管理的区别是什么", "answer": "精益核心是消除各类浪费、加快流程流转速度；六西格玛核心是减少数据波动、降低缺陷；二者常结合形成精益六西格玛综合改善体系。"}]
+</script>
+<script>
+const ALL_QUESTIONS = JSON.parse(document.getElementById('quiz-data').textContent);
+
+const TYPE_LABELS = {all:'全部', fill:'填空', judge:'判断', single:'单选', multi:'多选', short:'简答'};
+
+let state = {
+  type: 'all',
+  chapter: 'all',
+  ordered: false,
+  wrongOnly: false,
+  pool: [],
+  idx: 0,
+  answered: false,
+  selected: [],       // for single/multi
+  sessionRight: 0,
+  sessionSeen: 0,
+};
+
+let wrongIds = new Set();
+let seenRightIds = new Set(); // ids answered correctly at least once this load (for stat display only)
+
+// ---- per-type timer (resets to 0 each time you enter that type) ----
+const TIMER_TYPES = ['fill','judge','single','multi','short'];
+let timeAccum = {fill:0, judge:0, single:0, multi:0, short:0};
+let timerActiveType = null;
+let timerStartMs = null;
+
+// ---- speed history: records each completed round's time per type, persisted ----
+let timeHistory = {fill:[], judge:[], single:[], multi:[], short:[]};
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem('tqm-time-history');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      TIMER_TYPES.forEach(t=>{ if(Array.isArray(parsed[t])) timeHistory[t] = parsed[t]; });
+    }
+  }catch(e){}
+}
+function saveHistory(){
+  try{ localStorage.setItem('tqm-time-history', JSON.stringify(timeHistory)); }catch(e){}
+}
+function recordRound(type, seconds){
+  if(seconds < 3) return; // ignore accidental instant taps
+  timeHistory[type].push({ t: Math.round(seconds), when: Date.now() });
+  if(timeHistory[type].length > 50) timeHistory[type] = timeHistory[type].slice(-50);
+  saveHistory();
+}
+
+function stopTimer(recordIt){
+  if(timerActiveType && timerStartMs){
+    const elapsed = (Date.now()-timerStartMs)/1000;
+    timeAccum[timerActiveType] += elapsed;
+    if(recordIt) recordRound(timerActiveType, timeAccum[timerActiveType]);
+  }
+  timerActiveType = null;
+  timerStartMs = null;
+}
+function startTimerFor(type){
+  stopTimer(true); // leaving the previous type counts as finishing that round
+  if(TIMER_TYPES.includes(type)){
+    timeAccum[type] = 0; // reset to zero every time this type is entered
+    timerActiveType = type;
+    timerStartMs = Date.now();
+  }
+}
+function formatTime(sec){
+  sec = Math.floor(sec);
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function renderTimerRow(){
+  const host = document.getElementById('timerRow');
+  const liveExtra = timerActiveType ? (Date.now()-timerStartMs)/1000 : 0;
+  host.innerHTML = TIMER_TYPES.map(t=>{
+    const total = timeAccum[t] + (t===timerActiveType ? liveExtra : 0);
+    const active = t===timerActiveType;
+    return `<span class="timer-chip${active?' active':''}">${TYPE_LABELS[t]} ${formatTime(total)}</span>`;
+  }).join('') + `<span class="timer-chip" id="historyToggle" style="cursor:pointer;">📊 用时记录</span>`;
+  document.getElementById('historyToggle').onclick = toggleHistoryPanel;
+}
+function toggleHistoryPanel(){
+  const existing = document.getElementById('historyPanel');
+  if(existing){ existing.remove(); return; }
+  const panel = document.createElement('div');
+  panel.id = 'historyPanel';
+  panel.className = 'card';
+  panel.style.marginBottom = '12px';
+  panel.innerHTML = TIMER_TYPES.map(t=>{
+    const hist = timeHistory[t];
+    if(hist.length===0) return `<div style="margin-bottom:8px;"><b>${TYPE_LABELS[t]}</b>：暂无记录</div>`;
+    const times = hist.slice(-8).reverse().map(h=>formatTime(h.t));
+    const avg = hist.reduce((a,h)=>a+h.t,0)/hist.length;
+    return `<div style="margin-bottom:8px;"><b>${TYPE_LABELS[t]}</b>（共${hist.length}轮，平均${formatTime(avg)}）：最近 ${times.join('、')}</div>`;
+  }).join('');
+  document.getElementById('timerRow').insertAdjacentElement('afterend', panel);
+}
+setInterval(renderTimerRow, 1000);
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ stopTimer(false); }
+  else if(state.type !== 'all' && TIMER_TYPES.includes(state.type)){
+    // resume without resetting or recording (visibility pause, not a fresh entry)
+    timerActiveType = state.type;
+    timerStartMs = Date.now();
+  }
+});
+window.addEventListener('beforeunload', ()=>stopTimer(true));
+
+
+function loadWrong(){
+  try{
+    const raw = localStorage.getItem('tqm-wrong-ids');
+    if(raw){ wrongIds = new Set(JSON.parse(raw)); }
+  }catch(e){ wrongIds = new Set(); }
+  updateWrongCount();
+}
+function saveWrong(){
+  try{ localStorage.setItem('tqm-wrong-ids', JSON.stringify([...wrongIds])); }catch(e){}
+}
+function updateWrongCount(){
+  document.getElementById('wrongCount').textContent = wrongIds.size;
+}
+
+function chaptersFor(type){
+  const set = [];
+  const seen = new Set();
+  ALL_QUESTIONS.forEach(q=>{
+    if(type!=='all' && q.section!==type) return;
+    if(!seen.has(q.chapter)){ seen.add(q.chapter); set.push(q.chapter); }
+  });
+  return set;
+}
+
+function buildTabs(){
+  const host = document.getElementById('typeTabs');
+  host.innerHTML = '';
+  Object.keys(TYPE_LABELS).forEach(key=>{
+    const btn = document.createElement('div');
+    btn.className = 'tab' + (state.type===key ? ' active' : '');
+    const count = key==='all' ? ALL_QUESTIONS.length : ALL_QUESTIONS.filter(q=>q.section===key).length;
+    btn.textContent = TYPE_LABELS[key] + ' ' + count;
+    btn.onclick = ()=>{
+      state.type = key;
+      state.chapter='all';
+      if(key==='all'){ stopTimer(true); } else { startTimerFor(key); }
+      buildTabs(); buildChapterSelect(); resetPool(); renderTimerRow();
+    };
+    host.appendChild(btn);
+  });
+}
+
+function buildChapterSelect(){
+  const sel = document.getElementById('chapterSelect');
+  const chapters = chaptersFor(state.type);
+  sel.innerHTML = '<option value="all">全部章节</option>' + chapters.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value = state.chapter;
+  sel.onchange = ()=>{ state.chapter = sel.value; resetPool(); };
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function getShuffledOptions(q){
+  const entries = Object.entries(q.options);
+  const correctSet = new Set(q.answer.split(''));
+  const marked = entries.map(([letter,text])=>({text, correct: correctSet.has(letter)}));
+  const shuffled = shuffle(marked);
+  const letters = 'ABCDEFGH'.slice(0, shuffled.length).split('');
+  const options = {};
+  let answer = '';
+  shuffled.forEach((item,i)=>{
+    options[letters[i]] = item.text;
+    if(item.correct) answer += letters[i];
+  });
+  return {options, answer};
+}
+
+// character-level LCS diff: returns array of {ch, match} for the reference string,
+// where match=true if ch participates in the longest common subsequence with userStr
+function diffAgainstReference(userStr, refStr){
+  const u = [...userStr];
+  const r = [...refStr];
+  const n = u.length, m = r.length;
+  const dp = Array.from({length:n+1}, ()=>new Uint16Array(m+1));
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      if(u[i-1]===r[j-1]) dp[i][j] = dp[i-1][j-1]+1;
+      else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  // backtrack to find which ref indices are matched
+  const matchedRef = new Array(m).fill(false);
+  let i=n, j=m;
+  while(i>0 && j>0){
+    if(u[i-1]===r[j-1]){
+      matchedRef[j-1]=true;
+      i--; j--;
+    } else if(dp[i-1][j] >= dp[i][j-1]){
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return r.map((ch,idx)=>({ch, match: matchedRef[idx]}));
+}
+
+function resetPool(){
+  let pool = ALL_QUESTIONS.filter(q=>{
+    if(state.type!=='all' && q.section!==state.type) return false;
+    if(state.chapter!=='all' && q.chapter!==state.chapter) return false;
+    if(state.wrongOnly && !wrongIds.has(q.id)) return false;
+    return true;
+  });
+  if(!state.ordered) pool = shuffle(pool);
+  state.pool = pool;
+  state.idx = 0;
+  state.sessionRight = 0;
+  state.sessionSeen = 0;
+  renderCard();
+}
+
+function updateGauge(){
+  const total = state.pool.length;
+  const posDisplay = total ? Math.min(state.idx+1, total) : 0;
+  document.getElementById('gaugeText').textContent = `${posDisplay} / ${total}`;
+  const pct = total ? (posDisplay/total*100) : 0;
+  document.getElementById('gaugeFill').style.width = pct+'%';
+  let setName = TYPE_LABELS[state.type];
+  if(state.chapter!=='all') setName += ' · ' + state.chapter;
+  if(state.wrongOnly) setName += '（错题）';
+  document.getElementById('gaugeSetName').textContent = setName;
+
+  const acc = state.sessionSeen ? Math.round(state.sessionRight/state.sessionSeen*100) : null;
+  document.getElementById('accStat').textContent = acc===null ? '--' : acc+'%';
+}
+
+function markResult(q, correct){
+  state.sessionSeen++;
+  if(correct){ state.sessionRight++; }
+  if(!correct){ wrongIds.add(q.id); }
+  else if(state.wrongOnly && wrongIds.has(q.id)){ wrongIds.delete(q.id); }
+  saveWrong();
+  updateWrongCount();
+  updateGauge();
+}
+
+function renderCard(){
+  updateGauge();
+  const host = document.getElementById('cardHost');
+  const foot = document.getElementById('footHint');
+  if(state.pool.length===0){
+    host.innerHTML = `<div class="card"><div class="empty">${state.wrongOnly ? '这个范围内还没有错题，先去练习吧 👍' : '没有匹配的题目'}</div></div>`;
+    foot.textContent='';
+    return;
+  }
+  const q = state.pool[state.idx];
+  state.answered = false;
+  state.selected = [];
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const meta = document.createElement('div');
+  meta.className = 'card-meta';
+  meta.innerHTML = `<span class="chip">${TYPE_LABELS[q.section]} · ${q.chapter}</span><span>#${q.num}</span>`;
+  card.appendChild(meta);
+
+  const qtext = document.createElement('div');
+  qtext.className = 'qtext';
+  qtext.innerHTML = escapeHtml(q.question).replace(/____/g, '<span class="blank">____</span>');
+  card.appendChild(qtext);
+
+  const body = document.createElement('div');
+  card.appendChild(body);
+
+  const feedback = document.createElement('div');
+  feedback.className = 'feedback';
+  feedback.id = 'feedback';
+
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+
+  if(q.section==='fill'){
+    body.innerHTML = `<input class="fill-input" id="fillInput" placeholder="输入你记得的答案，或直接点"下一题"看答案" autocomplete="off" />`;
+    const checkBtn = mkBtn('对答案', 'btn-primary', ()=>{
+      const val = document.getElementById('fillInput').value.trim();
+      showFillAnswer(q, val, feedback);
+    });
+    actions.appendChild(checkBtn);
+  } else if(q.section==='judge'){
+    const row = document.createElement('div');
+    row.className = 'tf-row';
+    const rightBtn = mkTfBtn('正确', ()=>selectJudge(q,'正确',rightBtn,wrongBtnEl,feedback));
+    const wrongBtnEl = mkTfBtn('错误', ()=>selectJudge(q,'错误',rightBtn,wrongBtnEl,feedback));
+    row.appendChild(rightBtn); row.appendChild(wrongBtnEl);
+    body.appendChild(row);
+  } else if(q.section==='single' || q.section==='multi'){
+    const shuffled = getShuffledOptions(q);
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'opts';
+    const letters = Object.keys(shuffled.options);
+    const optEls = {};
+    letters.forEach(letter=>{
+      const el = document.createElement('div');
+      el.className = 'opt';
+      el.innerHTML = `<span class="letter">${letter}</span><span>${escapeHtml(shuffled.options[letter])}</span>`;
+      el.onclick = ()=>{
+        if(state.answered) return;
+        if(q.section==='single'){
+          state.selected = [letter];
+          Object.values(optEls).forEach(e=>e.classList.remove('selected'));
+          el.classList.add('selected');
+        } else {
+          if(state.selected.includes(letter)){
+            state.selected = state.selected.filter(l=>l!==letter);
+            el.classList.remove('selected');
+          } else {
+            state.selected.push(letter);
+            el.classList.add('selected');
+          }
+        }
+      };
+      optEls[letter]=el;
+      optsWrap.appendChild(el);
+    });
+    body.appendChild(optsWrap);
+    const submitBtn = mkBtn('提交答案', 'btn-primary', ()=>{
+      if(state.selected.length===0) return;
+      submitChoice(q, optEls, feedback, shuffled.answer);
+    });
+    actions.appendChild(submitBtn);
+  } else if(q.section==='short'){
+    body.innerHTML = `<textarea class="fill-input" id="shortInput" rows="4" placeholder="输入你的答案，逐字比对，回车不提交" style="resize:vertical; font-family:inherit;"></textarea>`;
+    const checkBtn = mkBtn('判分', 'btn-primary', ()=>{
+      const val = document.getElementById('shortInput').value.trim();
+      showShortAnswer(q, val, feedback);
+    });
+    actions.appendChild(checkBtn);
+  }
+
+  card.appendChild(actions);
+  card.appendChild(feedback);
+
+  const navRow = document.createElement('div');
+  navRow.className = 'nav';
+  const nextBtn = mkBtn('下一题 →', 'btn-ghost', ()=>{
+    const wasLast = (state.idx === state.pool.length-1);
+    state.idx = (state.idx+1) % state.pool.length;
+    if(wasLast && !state.ordered){
+      state.pool = shuffle(state.pool);
+      state.idx = 0;
+      state.sessionRight = 0;
+      state.sessionSeen = 0;
+      state.justReshuffled = true;
+    }
+    renderCard();
+  });
+  navRow.appendChild(nextBtn);
+  card.appendChild(navRow);
+
+  host.innerHTML = '';
+  host.appendChild(card);
+
+  foot.textContent = `共 ${state.pool.length} 题 · 本轮正确 ${state.sessionRight}/${state.sessionSeen}${state.justReshuffled ? '（新一轮已打乱顺序）' : ''}`;
+  state.justReshuffled = false;
+}
+
+function mkBtn(text, cls, onclick){
+  const b = document.createElement('button');
+  b.className = 'btn ' + cls;
+  b.textContent = text;
+  b.onclick = onclick;
+  return b;
+}
+function mkTfBtn(text, onclick){
+  const b = document.createElement('button');
+  b.className = 'tf-btn';
+  b.textContent = text;
+  b.onclick = onclick;
+  return b;
+}
+
+function showFillAnswer(q, userVal, feedback){
+  if(state.answered) return;
+  state.answered = true;
+  const answers = q.answer.join('、');
+  const guessedRight = userVal && q.answer.some(a=> a.replace(/\s/g,'') === userVal.replace(/\s/g,''));
+  feedback.className = 'feedback show ' + (guessedRight ? 'good' : 'bad');
+  feedback.innerHTML = guessedRight
+    ? `✅ 正确！答案：<b>${escapeHtml(answers)}</b>`
+    : `参考答案：<b>${escapeHtml(answers)}</b>${userVal ? '（你的答案未完全匹配，自行判断是否算对）' : ''}`;
+  const marked = confirmSelfGraded(feedback, q, guessedRight);
+}
+
+function confirmSelfGraded(feedback, q, defaultGuess){
+  // add self-grade buttons since fill-in matching is fuzzy
+  const wrap = document.createElement('div');
+  wrap.style.display='flex';
+  wrap.style.gap='8px';
+  wrap.style.marginTop='8px';
+  const goodBtn = mkBtn('我记对了', 'btn-good', ()=>{ markResult(q, true); wrap.remove(); goodBtn.disabled=true; badBtn.disabled=true;});
+  const badBtn = mkBtn('没记住', 'btn-warn', ()=>{ markResult(q, false); wrap.remove(); goodBtn.disabled=true; badBtn.disabled=true;});
+  wrap.appendChild(goodBtn); wrap.appendChild(badBtn);
+  feedback.appendChild(wrap);
+}
+
+function selectJudge(q, choice, rightBtn, wrongBtnEl, feedback){
+  if(state.answered) return;
+  state.answered = true;
+  const correct = choice === q.answer;
+  if(q.answer==='正确') rightBtn.classList.add('correct');
+  else if(choice==='正确') rightBtn.classList.add('incorrect');
+  if(q.answer==='错误') wrongBtnEl.classList.add('correct');
+  else if(choice==='错误') wrongBtnEl.classList.add('incorrect');
+  feedback.className = 'feedback show ' + (correct ? 'good':'bad');
+  feedback.innerHTML = correct ? '✅ 回答正确！' : `❌ 答错了，正确答案是：<b>${q.answer}</b>`;
+  markResult(q, correct);
+}
+
+function submitChoice(q, optEls, feedback, correctAnswer){
+  if(state.answered) return;
+  state.answered = true;
+  const correctLetters = correctAnswer.split('');
+  const selected = state.selected.slice().sort();
+  const correct = selected.join('') === correctLetters.slice().sort().join('');
+  Object.keys(optEls).forEach(letter=>{
+    if(correctLetters.includes(letter)) optEls[letter].classList.add('correct');
+    else if(selected.includes(letter)) optEls[letter].classList.add('incorrect');
+  });
+  feedback.className = 'feedback show ' + (correct ? 'good':'bad');
+  feedback.innerHTML = correct ? '✅ 回答正确！' : `❌ 答错了，正确答案是：<b>${correctAnswer}</b>`;
+  markResult(q, correct);
+}
+
+function showShortAnswer(q, userVal, feedback){
+  if(state.answered) return;
+  const exact = userVal === q.answer;
+  if(exact){
+    state.answered = true;
+    feedback.className = 'feedback show good';
+    feedback.innerHTML = '✅ 一字不差，完全正确！';
+    markResult(q, true);
+    return;
+  }
+  state.answered = true;
+  const diff = diffAgainstReference(userVal, q.answer);
+  const diffHtml = diff.map(d => d.match
+    ? `<span style="color:var(--good); font-weight:600;">${escapeHtml(d.ch)}</span>`
+    : `<span style="color:var(--bad); font-weight:700; text-decoration:underline; text-decoration-color:var(--bad);">${escapeHtml(d.ch)}</span>`
+  ).join('');
+  feedback.className = 'feedback show bad';
+  feedback.innerHTML = `未完全匹配，参考答案（红色为你没答对的部分）：<br><div style="margin-top:6px; line-height:1.7;">${diffHtml}</div>`;
+  confirmSelfGraded(feedback, q, false);
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.getElementById('orderBtn').onclick = ()=>{
+  state.ordered = !state.ordered;
+  document.getElementById('orderBtn').classList.toggle('active', state.ordered);
+  document.getElementById('orderBtn').textContent = state.ordered ? '顺序 ✓' : '顺序';
+  resetPool();
+};
+document.getElementById('wrongBtn').onclick = ()=>{
+  state.wrongOnly = !state.wrongOnly;
+  document.getElementById('wrongBtn').classList.toggle('active', state.wrongOnly);
+  resetPool();
+};
+
+(function init(){
+  loadWrong();
+  loadHistory();
+  buildTabs();
+  buildChapterSelect();
+  resetPool();
+  renderTimerRow();
+})();
+</script>
+</body>
+</html>
