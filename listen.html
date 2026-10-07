@@ -14,7 +14,8 @@ button.main{background:var(--accent);color:#06201c;border-color:var(--accent);fo
 select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px}
 label{display:flex;gap:6px;align-items:center}
 ol{list-style:none;margin:0;padding:0}li{border-top:1px solid var(--line);padding:10px 4px;cursor:pointer;font-size:14px}li.on{color:var(--accent);font-weight:700}li span{color:var(--muted);margin-right:8px;font-variant-numeric:tabular-nums}
-</style></head><body>
+</style><link rel="manifest" href="manifest.json"><script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
+</head><body>
 <h1>简答题听力 · 20题</h1><div class="sub">先听问题，停几秒自己想，再听答案。<a href="index.html">回到刷题</a></div>
 <div class="now"><div class="t" id="st">点“播放”开始</div><div class="q" id="q">—</div><div class="a" id="a"></div></div>
 <div class="ctl"><button id="prev">上一题</button><button class="main" id="play">播放</button><button id="next">下一题</button></div>
